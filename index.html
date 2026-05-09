@@ -1116,12 +1116,12 @@ async function loadFromDrive(){
       const name='HealthMetrics-'+fecha;
       const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and name contains '"+name+"' and trashed=false");
       const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&key='+apiKey);
-      if(!r.ok)continue;
+      if(!r.ok){badge.textContent="Error API: "+r.status+" "+r.statusText;badge.className="status-error";const st=document.getElementById("api-key-status");if(st){st.textContent="Error "+r.status+": "+r.statusText;st.style.color="#DC2626";}continue;}
       const data=await r.json();
       if(data.files&&data.files.length>0){await loadFileById(data.files[0].id,fecha,data.files[0].name,apiKey);return;}
     }
-    badge.textContent='Sin datos recientes';badge.className='status-loading';
-  }catch(e){console.error(e);badge.textContent='Error al cargar';badge.className='status-error';}
+    badge.textContent='Sin datos de hoy ni ayer en Drive';badge.className='status-error';const ste=document.getElementById('api-key-status');if(ste){ste.textContent='No se encontraron archivos HealthMetrics recientes en Drive.';ste.style.color='#DC2626';}
+  }catch(e){console.error(e);badge.textContent='Error: '+e.message;badge.className='status-error';const ste2=document.getElementById('api-key-status');if(ste2){ste2.textContent='Error técnico: '+e.message;ste2.style.color='#DC2626';}}
 }
 async function loadFileById(fileId,fecha,fileName,apiKey){
   const badge=document.getElementById('status-badge');
