@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan Centenario · Fernando Vizoso</title>
+<title>Plan Centenario Personal</title>
 <style>
 /* ── RESET Y BASE ─────────────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -180,8 +180,8 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
 <header>
   <div>
-    <h1>Plan Centenario · Fernando Vizoso Estrades</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años con calidad de vida</p>
+    <h1>Plan Centenario Personal</h1>
+    <p>50 años · Horizonte 2076 · Objetivo: 100 años con calidad de vida</p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -257,7 +257,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
   <div class="sec">Alertas activas</div>
   <div id="alertas-container">
-    <div class="ab ab-red"><strong>🔴 LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. <strong>Pedir cita Dra. Merino esta semana.</strong> cardioprevencion.mad@quironsalud.es</div>
+    <div class="ab ab-red"><strong>🔴 LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. <strong>Pedir cita la cardióloga esta semana.</strong> [email del cardiólogo]</div>
     <div class="ab ab-red"><strong>🔴 Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir vitamina B6 al Acfol.</div>
     <div class="ab ab-amber"><strong>🟡 Vitamina D insuficiente</strong> — 23.7 ng/mL. Cambiar a D3 2.000–4.000 UI/día. Objetivo ≥40 ng/mL.</div>
     <div class="ab ab-amber"><strong>🟡 Déficit de proteína</strong> — 86 g/día (CalAI). Objetivo: 120–150 g/día. Añadir 1–2 tomas proteína suero + legumbres.</div>
@@ -542,7 +542,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <div id="pane-setup" class="pane">
 
   <div class="ab ab-blue" style="margin-bottom:16px">
-    <strong>Objetivo:</strong> tener este dashboard en una URL directa tuya (ej. <code>fernandovizoso.github.io/salud</code>)
+    <strong>Objetivo:</strong> tener este dashboard en una URL directa tuya (ej. <code>godo1607.github.io/salud</code>)
     que se abre en cualquier navegador sin entrar en Claude. Los datos se actualizan solos cada mañana desde tus wearables.
     Tiempo total de configuración: <strong>~45–60 minutos la primera vez</strong>.
   </div>
@@ -647,8 +647,8 @@ const STATUS_BG     = {ok:'#D1FAE5', warn:'#FEF3C7', alert:'#FEE2E2'};
 // ════════════════════════════════════════════════════════════════════
 const HITOS = {
   semana:[
-    {id:'h1',title:'Pedir cita Dra. Merino (Cardiología Olympia)',
-     desc:'cardioprevencion.mad@quironsalud.es · llevar analítica dic-2025 · discutir alternativa a Crestor'},
+    {id:'h1',title:'Pedir cita la cardióloga (Cardiología Olympia)',
+     desc:'[email del cardiólogo] · llevar analítica dic-2025 · discutir alternativa a Crestor'},
     {id:'h2',title:'Cambiar vitamina D a D3 2.000–4.000 UI/día',
      desc:'Sustituir calcifediol 1 cáp/mes · sin receta · objetivo ≥40 ng/mL'},
   ],
@@ -660,7 +660,7 @@ const HITOS = {
     {id:'h5',title:'Fuerza estructurada 2×/semana',
      desc:'Sentadilla · peso muerto · press · remo con carga · progresión +2.5% c/2 semanas'},
     {id:'h6',title:'Ecografía renal control (Bosniak II)',
-     desc:'Último control nov-2025 · pedir cita Dra. Carretero o radiología MAPFRE'},
+     desc:'Último control nov-2025 · pedir cita la internista o radiología MAPFRE'},
   ],
   q2:[
     {id:'h7',title:'Analítica de control',
@@ -686,7 +686,7 @@ const HITOS = {
 
 const TIMELINE_ANUAL = [
   {year:'2027',items:['Ergoespirometría real (VO₂max medido en laboratorio)','LDL <70 sostenido 12 meses · Hcy <10 · Vit D ≥40','Eco-Doppler TSAo seguimiento placas carotídeas']},
-  {year:'2028',items:['Revisión cardiológica con ergometría (5 años desde La Luz)','Ecocardiograma completo']},
+  {year:'2028',items:['Revisión cardiológica con ergometría (5 años desde [clínica])','Ecocardiograma completo']},
   {year:'2029',items:['LDL <70 sostenido 3 años — legacy effect cardiovascular activo','Eco-Doppler TSAo 2ª medición']},
   {year:'2030',items:['Colonoscopia preventiva (10 años desde la de 2020)']},
   {year:'2031',items:['Chequeo MAPFRE completo a los 55 años — referencia de mitad de década','Densitometría ósea 1ª medición','VO₂max medido en laboratorio ≥50 — hito clave']},
@@ -700,13 +700,13 @@ const TIMELINE_ANUAL = [
 const STEPS_FASE1 = [
   {
     n:'1', title:'Crear cuenta en GitHub',
-    desc:'Ve a <strong>github.com</strong> → clic en "Sign up" → introduce tu email, crea una contraseña, elige un nombre de usuario (ej. "fernandovizoso") → verifica el email. Es completamente gratuito.',
+    desc:'Ve a <strong>github.com</strong> → clic en "Sign up" → introduce tu email, crea una contraseña, elige un nombre de usuario (ej. "godo1607") → verifica el email. Es completamente gratuito.',
     img:'Abre github.com en el navegador → botón verde "Sign up" arriba a la derecha'
   },
   {
     n:'2', title:'Crear un nuevo repositorio',
     desc:'Una vez dentro de GitHub: clic en el icono "+" arriba a la derecha → "New repository". En "Repository name" escribe exactamente: <code>salud</code>. Marca "Public". Marca "Add a README file". Clic en "Create repository".',
-    img:'El nombre del repositorio determina la URL: fernandovizoso.github.io/salud'
+    img:'El nombre del repositorio determina la URL: godo1607.github.io/salud'
   },
   {
     n:'3', title:'Subir el archivo del dashboard',
@@ -716,7 +716,7 @@ const STEPS_FASE1 = [
   {
     n:'4', title:'Activar GitHub Pages',
     desc:'En tu repositorio: clic en "Settings" (pestaña de arriba) → en el menú izquierdo busca "Pages" → en "Source" selecciona "Deploy from a branch" → en "Branch" selecciona "main" → clic en "Save".',
-    img:'Espera 2–3 minutos. Luego tu dashboard estará en: https://fernandovizoso.github.io/salud'
+    img:'Espera 2–3 minutos. Luego tu dashboard estará en: https://godo1607.github.io/salud'
   },
   {
     n:'5', title:'Verificar que funciona',
@@ -728,7 +728,7 @@ const STEPS_FASE1 = [
 const STEPS_FASE2 = [
   {
     n:'1', title:'Crear la hoja de Google Sheets',
-    desc:'Ve a <strong>sheets.google.com</strong> → clic en el "+" para crear una hoja nueva → nómbrala "Plan Centenario Vizoso".',
+    desc:'Ve a <strong>sheets.google.com</strong> → clic en el "+" para crear una hoja nueva → nómbrala "Plan Centenario".',
   },
   {
     n:'2', title:'Crear las pestañas necesarias',
@@ -782,7 +782,7 @@ const STEPS_FASE3 = [
   },
   {
     n:'4', title:'Conectar con Google Sheets',
-    desc:'En la app: ve a "Export" → selecciona "Google Sheets" → inicia sesión con tu cuenta de Google → selecciona la hoja "Plan Centenario Vizoso" que creaste antes → selecciona la pestaña "Garmin_Diario".',
+    desc:'En la app: ve a "Export" → selecciona "Google Sheets" → inicia sesión con tu cuenta de Google → selecciona la hoja "Plan Centenario" que creaste antes → selecciona la pestaña "Garmin_Diario".',
   },
   {
     n:'5', title:'Programar la exportación automática diaria',
@@ -865,7 +865,7 @@ const STEPS_FASE5 = [
   if (alertas.length > 0) {
     MailApp.sendEmail({
       to: 'TU_EMAIL@gmail.com',
-      subject: '🔴 Alerta Plan Centenario — ' + hoy,
+      subject: '🔴 Alerta Plan Centenario ' + hoy,
       body: alertas.join('\n\n') + '\n\nRevisa el dashboard: https://TU_USUARIO.github.io/salud'
     });
   }
