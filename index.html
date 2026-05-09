@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v2026-05-09T22:43:37Z</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v2026-05-09T22:47:20Z</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1110,17 +1110,37 @@ async function loadFromDrive(){
   }
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    for(let back=0;back<=7;back++){
-      const d=new Date();d.setDate(d.getDate()-back);
-      const fecha=dateStr(d);
-      const name='HealthMetrics-'+fecha;
-      const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and name contains '"+name+"' and trashed=false");
-      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&key='+apiKey);
-      if(!r.ok){badge.textContent="Error API: "+r.status+" "+r.statusText;badge.className="status-error";const st=document.getElementById("api-key-status");if(st){st.textContent="Error "+r.status+": "+r.statusText;st.style.color="#DC2626";}continue;}
-      const data=await r.json();
-      if(data.files&&data.files.length>0){await loadFileById(data.files[0].id,fecha,data.files[0].name,apiKey);return;}
+    // Listar todos los archivos de la carpeta, ordenados por fecha desc
+    const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and trashed=false");
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&orderBy=name+desc&pageSize=20&key='+apiKey);
+    if(!r.ok){
+      const errTxt=await r.text();
+      badge.textContent='Error API: '+r.status;badge.className='status-error';
+      const st=document.getElementById('api-key-status');
+      if(st){st.textContent='Error '+r.status+': '+errTxt.substring(0,200);st.style.color='#DC2626';}
+      return;
     }
-    badge.textContent='Sin datos de hoy ni ayer en Drive';badge.className='status-error';const ste=document.getElementById('api-key-status');if(ste){ste.textContent='No se encontraron archivos HealthMetrics recientes en Drive.';ste.style.color='#DC2626';}
+    const data=await r.json();
+    const st=document.getElementById('api-key-status');
+    if(!data.files||data.files.length===0){
+      badge.textContent='Carpeta Drive vacía';badge.className='status-error';
+      if(st){st.textContent='No hay archivos en la carpeta Plan Centenario de Drive.';st.style.color='#DC2626';}
+      return;
+    }
+    // Mostrar todos los archivos encontrados para diagnóstico
+    if(st){st.textContent='Archivos encontrados: '+data.files.map(f=>f.name).join(', ');st.style.color='#15803D';}
+    // Buscar el más reciente que contenga HealthMetrics
+    const hm=data.files.find(f=>f.name.includes('HealthMetrics'));
+    if(!hm){
+      badge.textContent='Sin archivos HealthMetrics';badge.className='status-error';
+      if(st){st.textContent='Archivos en carpeta: '+data.files.map(f=>f.name).join(', ');st.style.color='#DC2626';}
+      return;
+    }
+    // Extraer fecha del nombre
+    const match=hm.name.match(/(\d{4}-\d{2}-\d{2})/);
+    const fecha=match?match[1]:dateStr(new Date());
+    await loadFileById(hm.id,fecha,hm.name,apiKey);
+    return;
   }catch(e){console.error(e);badge.textContent='Error: '+e.message;badge.className='status-error';const ste2=document.getElementById('api-key-status');if(ste2){ste2.textContent='Error técnico: '+e.message;ste2.style.color='#DC2626';}}
 }
 async function loadFileById(fileId,fecha,fileName,apiKey){
@@ -1178,7 +1198,7 @@ function show(id) {
 // ── INIT ──
 // Mostrar timestamp en hora local del navegador
 (function(){
-  const buildUTC = '2026-05-09T22:43:37Z';
+  const buildUTC = '2026-05-09T22:47:20Z';
   const d = new Date(buildUTC);
   const ts = document.getElementById('build-ts');
   if(ts) ts.textContent = 'v' + d.toLocaleString('es-ES', {
