@@ -174,6 +174,38 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:#F8FAFC}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+/* ── PANEL DETALLE KPI ── */
+.kpi{cursor:pointer;transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 0 0 2px #2563EB33}
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+  z-index:200;align-items:center;justify-content:center}
+.detail-overlay.open{display:flex}
+.detail-box{background:#fff;border-radius:14px;padding:24px 26px;max-width:420px;
+  width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative}
+.detail-close{position:absolute;top:14px;right:16px;background:none;border:none;
+  font-size:20px;cursor:pointer;color:#94A3B8}
+.detail-title{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:6px;padding-right:24px}
+.detail-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;
+  display:inline-block;margin-bottom:10px}
+.bdg-diario{background:#DBEAFE;color:#1E40AF}
+.bdg-analitica{background:#FEF3C7;color:#92400E}
+.bdg-manual{background:#F3E8FF;color:#6B21A8}
+.detail-val{font-size:36px;font-weight:800;line-height:1;margin:8px 0 14px}
+.drow{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:11.5px}
+.drow:last-child{border-bottom:none}
+.dlabel{color:#94A3B8;width:90px;flex-shrink:0}
+.ddata{color:#334155;flex:1;line-height:1.5}
+/* ── LOG ── */
+.log-row{display:grid;grid-template-columns:160px 1fr 80px 70px;
+  gap:8px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:11px;align-items:center}
+.log-row:last-child{border-bottom:none}
+.log-col{color:#94A3B8;font-family:monospace;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-name{color:#475569}
+.log-val{font-weight:700;color:#1E293B;text-align:right}
+.log-tipo{font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;text-align:center}
+.lt-d{background:#DBEAFE;color:#1E40AF}
+.lt-a{background:#D1FAE5;color:#065F46}
+
 </style>
 </head>
 <body>
@@ -181,7 +213,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Horizonte 2076 · Objetivo: 100 años con calidad de vida</p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años con calidad de vida</p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -195,7 +227,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   <button class="ntab" onclick="show('metricas')">Métricas</button>
   <button class="ntab" onclick="show('nutricion')">Nutrición</button>
   <button class="ntab" onclick="show('decadas')">Plan décadas</button>
-  <button class="ntab" onclick="show('setup')">Configuración</button>
+  <button class="ntab" onclick="show('datos')">Datos cargados</button>
 </nav>
 
 <main>
@@ -257,7 +289,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
   <div class="sec">Alertas activas</div>
   <div id="alertas-container">
-    <div class="ab ab-red"><strong>🔴 LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. <strong>Pedir cita la cardióloga esta semana.</strong> [email del cardiólogo]</div>
+    <div class="ab ab-red"><strong>🔴 LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. <strong>Pedir cita la cardióloga esta semana.</strong> [email cardiólogo]</div>
     <div class="ab ab-red"><strong>🔴 Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir vitamina B6 al Acfol.</div>
     <div class="ab ab-amber"><strong>🟡 Vitamina D insuficiente</strong> — 23.7 ng/mL. Cambiar a D3 2.000–4.000 UI/día. Objetivo ≥40 ng/mL.</div>
     <div class="ab ab-amber"><strong>🟡 Déficit de proteína</strong> — 86 g/día (CalAI). Objetivo: 120–150 g/día. Añadir 1–2 tomas proteína suero + legumbres.</div>
@@ -539,85 +571,55 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 </div>
 
 <!-- ══ CONFIGURACIÓN ════════════════════════════════════════════════ -->
-<div id="pane-setup" class="pane">
-
-  <div class="ab ab-blue" style="margin-bottom:16px">
-    <strong>Objetivo:</strong> tener este dashboard en una URL directa tuya (ej. <code>godo1607.github.io/salud</code>)
-    que se abre en cualquier navegador sin entrar en Claude. Los datos se actualizan solos cada mañana desde tus wearables.
-    Tiempo total de configuración: <strong>~45–60 minutos la primera vez</strong>.
+<div id="pane-datos" class="pane">
+  <div class="sec">Archivo activo</div>
+  <div class="card" id="log-source">
+    <p style="color:#94A3B8;font-size:12px">Se rellena automáticamente al cargar datos de Drive.</p>
   </div>
-
-  <!-- FASE 1 -->
-  <div class="sec">FASE 1 · Crear cuenta GitHub y publicar el dashboard (15 min)</div>
-  <div class="card" id="steps-fase1"></div>
-
-  <!-- FASE 2 -->
-  <div class="sec">FASE 2 · Crear la hoja de Google Sheets con tus datos (10 min)</div>
-  <div class="card" id="steps-fase2"></div>
-
-  <!-- FASE 3 -->
-  <div class="sec">FASE 3 · Instalar Health Auto Export en el iPhone (10 min)</div>
-  <div class="card" id="steps-fase3"></div>
-
-  <!-- FASE 4 -->
-  <div class="sec">FASE 4 · Conectar el dashboard con Google Sheets (10 min)</div>
-  <div class="card" id="steps-fase4"></div>
-
-  <!-- FASE 5 -->
-  <div class="sec">FASE 5 · Alertas automáticas por email (10 min, opcional)</div>
-  <div class="card" id="steps-fase5"></div>
-
-  <!-- RESUMEN -->
-  <div class="sec">Resumen del sistema completo</div>
+  <div class="sec" style="margin-top:16px">Valores extraídos del CSV</div>
   <div class="card">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
-      <div style="padding:12px;background:#F0FDF4;border-radius:8px;border:1px solid #BBF7D0">
-        <div style="font-size:20px;margin-bottom:4px">⌚📱</div>
-        <div style="font-size:11px;font-weight:600;color:#15803D">Sensores</div>
-        <div style="font-size:10px;color:#64748B;margin-top:2px">Garmin · Withings · iPhone · CalAI</div>
-      </div>
-      <div style="padding:12px;background:#EFF6FF;border-radius:8px;border:1px solid #BFDBFE">
-        <div style="font-size:20px;margin-bottom:4px">❤️</div>
-        <div style="font-size:11px;font-weight:600;color:#1E3A8A">Apple Health</div>
-        <div style="font-size:10px;color:#64748B;margin-top:2px">Agregador automático</div>
-      </div>
-      <div style="padding:12px;background:#F0FDF4;border-radius:8px;border:1px solid #BBF7D0">
-        <div style="font-size:20px;margin-bottom:4px">📊</div>
-        <div style="font-size:11px;font-weight:600;color:#15803D">Google Sheets</div>
-        <div style="font-size:10px;color:#64748B;margin-top:2px">Health Auto Export (4€)</div>
-      </div>
-      <div style="padding:12px;background:#EEF2FF;border-radius:8px;border:1px solid #C7D2FE">
-        <div style="font-size:20px;margin-bottom:4px">🌐</div>
-        <div style="font-size:11px;font-weight:600;color:#4338CA">GitHub Pages</div>
-        <div style="font-size:10px;color:#64748B;margin-top:2px">Este dashboard · URL directa</div>
-      </div>
+    <div class="log-row" style="font-size:10px;color:#94A3B8;font-weight:600;border-bottom:1px solid #E2E8F0;padding-bottom:4px">
+      <div>Columna CSV</div><div>Métrica</div><div style="text-align:right">Valor</div><div style="text-align:center">Tipo</div>
     </div>
-    <div style="text-align:center;margin-top:12px;font-size:11px;color:#64748B">
-      Todo gratis excepto Health Auto Export (~4€ una sola vez) · Coste mensual: 0€
+    <div id="log-values"><p style="color:#94A3B8;font-size:12px;padding:8px 0">Esperando datos...</p></div>
+  </div>
+  <div class="sec" style="margin-top:16px">Notas metodológicas</div>
+  <div class="card">
+    <div style="font-size:11.5px;color:#475569;line-height:1.9">
+      <strong style="color:#1E293B">Actualización:</strong> automática cada mañana a las 07:00 (Health Auto Export → Google Drive).<br>
+      <strong style="color:#1E293B">Datos diarios:</strong> FC reposo · peso · grasa · músculo · sueño — valor puntual del día.<br>
+      <strong style="color:#1E293B">Datos acumulados:</strong> pasos — suma de todas las horas del día.<br>
+      <strong style="color:#1E293B">Sueño:</strong> registrado en franja 00:00h (noche anterior).<br>
+      <strong style="color:#1E293B">VO₂max:</strong> solo en Garmin Connect — actualización manual.<br>
+      <strong style="color:#1E293B">Analíticas</strong> (LDL, HDL, vit D...): actualización manual semestral.
     </div>
   </div>
-
-</div><!-- fin main -->
+</div>
 </main>
 
 <script>
 // ════════════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN — ID de la carpeta "Plan Centenario" en Google Drive
+//  CONFIGURACIÓN — edita estas dos líneas con tus datos
 // ════════════════════════════════════════════════════════════════════
 const DRIVE_FOLDER_ID = '1-EVHafsuevOe1iT471zk5lgYNRQKx--8';
 const DRIVE_API_KEY   = 'AIzaSyCyHn7P0N1DGOSSZFhy4-0ug7ziXKnUMeA';
-
-// Nombres exactos de columnas en los archivos de Health Auto Export
 const COL_MAP = {
-  'FC_reposo':    'Frecuencia Cardiaca en Reposo (count/min)',
-  'Sueno':        'Análisis del Sueño [Central] (hr)',
-  'Sueno_prof':   'Análisis del Sueño [Profundo] (hr)',
-  'Sueno_REM':    'Análisis del Sueño [REM] (hr)',
-  'Peso':         'Peso (kg)',
-  'Grasa':        'Porcentaje de grasa corporal (%)',
-  'Musculo':      'Masa Corporal Magra (kg)',
-  'IMC':          'Índice de Masa Corporal (count)',
-  'Pasos':        'Conteo de Pasos (count)',
+  FC_reposo:  'Frecuencia Cardiaca en Reposo (count/min)',
+  Sueno:      'An\u00e1lisis del Sue\u00f1o [Central] (hr)',
+  Sueno_prof: 'An\u00e1lisis del Sue\u00f1o [Profundo] (hr)',
+  Sueno_REM:  'An\u00e1lisis del Sue\u00f1o [REM] (hr)',
+  Peso:       'Peso (kg)',
+  Grasa:      'Porcentaje de grasa corporal (%)',
+  Musculo:    'Masa Corporal Magra (kg)',
+  Pasos:      'Conteo de Pasos (count)',
+};
+const KPI_META = {
+  'VO\u2082max':    {tipo:'manual',    desc:'Estimaci\u00f3n Garmin. No disponible en Apple Health.', objetivo:'\u2265 52 ml/kg/min (2027)'},
+  'LDL':       {tipo:'anal\u00edtica',desc:'Colesterol LDL. Anal\u00edtica de laboratorio.', objetivo:'< 70 mg/dL (urgente)'},
+  'FC reposo': {tipo:'diario',    desc:'Primer registro nocturno/matutino de Garmin via Apple Health.', objetivo:'\u2264 58 bpm (2027)'},
+  'Sue\u00f1o':     {tipo:'diario',    desc:'Horas sue\u00f1o total (profundo+ligero+REM). Noche anterior.', objetivo:'\u2265 7.5 h/noche'},
+  'Vitamina D':{tipo:'anal\u00edtica',desc:'Niveles s\u00e9ricos. Anal\u00edtica de laboratorio.', objetivo:'\u2265 40 ng/mL'},
+  'HbA1c':     {tipo:'anal\u00edtica',desc:'Hemoglobina glicosilada. Control gluc\u00e9mico 3 meses.', objetivo:'< 5.5%'},
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -661,7 +663,7 @@ const STATUS_BG     = {ok:'#D1FAE5', warn:'#FEF3C7', alert:'#FEE2E2'};
 const HITOS = {
   semana:[
     {id:'h1',title:'Pedir cita la cardióloga (Cardiología Olympia)',
-     desc:'[email del cardiólogo] · llevar analítica dic-2025 · discutir alternativa a Crestor'},
+     desc:'[email cardiólogo] · llevar analítica dic-2025 · discutir alternativa a Crestor'},
     {id:'h2',title:'Cambiar vitamina D a D3 2.000–4.000 UI/día',
      desc:'Sustituir calcifediol 1 cáp/mes · sin receta · objetivo ≥40 ng/mL'},
   ],
@@ -741,7 +743,7 @@ const STEPS_FASE1 = [
 const STEPS_FASE2 = [
   {
     n:'1', title:'Crear la hoja de Google Sheets',
-    desc:'Ve a <strong>sheets.google.com</strong> → clic en el "+" para crear una hoja nueva → nómbrala "Plan Centenario".',
+    desc:'Ve a <strong>sheets.google.com</strong> → clic en el "+" para crear una hoja nueva → nómbrala "Plan Centenario —".',
   },
   {
     n:'2', title:'Crear las pestañas necesarias',
@@ -795,7 +797,7 @@ const STEPS_FASE3 = [
   },
   {
     n:'4', title:'Conectar con Google Sheets',
-    desc:'En la app: ve a "Export" → selecciona "Google Sheets" → inicia sesión con tu cuenta de Google → selecciona la hoja "Plan Centenario" que creaste antes → selecciona la pestaña "Garmin_Diario".',
+    desc:'En la app: ve a "Export" → selecciona "Google Sheets" → inicia sesión con tu cuenta de Google → selecciona la hoja "Plan Centenario —" que creaste antes → selecciona la pestaña "Garmin_Diario".',
   },
   {
     n:'5', title:'Programar la exportación automática diaria',
@@ -815,10 +817,10 @@ https://docs.google.com/spreadsheets/d/TU_ID/export?format=csv&gid=0`
     n:'2', title:'Editar el archivo index.html del dashboard',
     desc:'Abre el archivo index.html (este dashboard) con cualquier editor de texto (Bloc de notas en Windows, TextEdit en Mac). Busca las líneas al principio del script que dicen SHEETS_ID y reemplaza el valor.',
     code:`// Busca estas líneas cerca del principio del script:
-const SHEETS_ID   = 'TU_SHEETS_ID_AQUI';
+// Drive config — ver arriba
 const SHEETS_NAME = 'Dashboard';
 
-// Reemplaza TU_SHEETS_ID_AQUI por el ID real de tu hoja.
+// Conectado a Google Drive — configuración en DRIVE_FOLDER_ID y DRIVE_API_KEY
 // Ejemplo:
 const SHEETS_ID   = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms';
 const SHEETS_NAME = 'Dashboard';`
@@ -878,7 +880,7 @@ const STEPS_FASE5 = [
   if (alertas.length > 0) {
     MailApp.sendEmail({
       to: 'TU_EMAIL@gmail.com',
-      subject: '🔴 Alerta Plan Centenario ' + hoy,
+      subject: '🔴 Alerta Plan Centenario — ' + hoy,
       body: alertas.join('\n\n') + '\n\nRevisa el dashboard: https://TU_USUARIO.github.io/salud'
     });
   }
@@ -897,14 +899,17 @@ const STEPS_FASE5 = [
 
 function renderKPIs() {
   const g = document.getElementById('kpi-grid');
-  g.innerHTML = KPIS_RESUMEN.map(k => `
-    <div class="kpi">
-      <div class="kpi-label">${k.label}</div>
+  g.innerHTML = KPIS_RESUMEN.map(k => {
+    const lbl = k.label.replace(/'/g,"\\'");
+    const val = String(k.val).replace(/'/g,"\\'");
+    const sub = k.sub.replace(/'/g,"\\'");
+    return `<div class="kpi" onclick="openDetail('${lbl}','${val}','${k.unit}','${sub}')">
+      <div class="kpi-label">${k.label} <span style="color:#CBD5E1;font-size:9px">▸</span></div>
       <div class="kpi-value ${k.status}">${k.val} <span style="font-size:13px;font-weight:400">${k.unit}</span></div>
       <div class="kpi-sub">${k.sub}</div>
       <div class="kpi-bar"><div class="kpi-fill" style="width:${k.pct}%;background:${STATUS_COLORS[k.status]}"></div></div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderProgressBars() {
@@ -1050,155 +1055,118 @@ function renderSteps(containerId, steps) {
     </div>`).join('');
 }
 
-// Construir fecha de hoy en formato del archivo: HealthMetrics-YYYY-MM-DD
-function todayStr() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
-}
-
-// Parsear CSV respetando campos entre comillas
-function parseCSV(text) {
-  const rows = [];
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; continue; }
-      if (line[i] === ',' && !inQ) { cols.push(cur); cur = ''; }
-      else cur += line[i];
+// ── CSV utils ─────────────────────────────────────────────────────
+function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseCSV(text){
+  const rows=[];
+  for(const line of text.split('\n')){
+    if(!line.trim())continue;
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      if(line[i]==='"'){inQ=!inQ;continue;}
+      if(line[i]===','&&!inQ){cols.push(cur);cur='';}else cur+=line[i];
     }
-    cols.push(cur);
-    rows.push(cols);
+    cols.push(cur);rows.push(cols);
   }
   return rows;
 }
-
-// Buscar valor de una columna en todas las filas, devolver el primero no vacío
-function findVal(rows, headers, colName) {
-  const idx = headers.findIndex(h => h.trim() === colName);
-  if (idx === -1) return null;
-  for (let i = 1; i < rows.length; i++) {
-    const v = rows[i][idx]?.trim();
-    if (v && v !== '0' && v !== '') return parseFloat(v);
-  }
+function findVal(rows,h,col){
+  const idx=h.findIndex(x=>x.trim()===col);if(idx<0)return null;
+  for(let i=1;i<rows.length;i++){const v=rows[i][idx]?.trim();if(v&&v!=='0'&&v!=='')return parseFloat(v);}
   return null;
 }
-
-// Sumar todos los valores de una columna (para pasos acumulados en el día)
-function sumVal(rows, headers, colName) {
-  const idx = headers.findIndex(h => h.trim() === colName);
-  if (idx === -1) return null;
-  let total = 0, found = false;
-  for (let i = 1; i < rows.length; i++) {
-    const v = rows[i][idx]?.trim();
-    if (v && v !== '') { total += parseFloat(v)||0; found = true; }
-  }
-  return found ? total : null;
+function sumVal(rows,h,col){
+  const idx=h.findIndex(x=>x.trim()===col);if(idx<0)return null;
+  let t=0,f=false;
+  for(let i=1;i<rows.length;i++){const v=rows[i][idx]?.trim();if(v&&v!==''){t+=parseFloat(v)||0;f=true;}}
+  return f?t:null;
 }
-
-async function loadFromDrive() {
-  const badge = document.getElementById('status-badge');
-  badge.textContent = 'Cargando datos...';
-  badge.className = 'status-loading';
-
-  try {
-    // 1. Buscar el archivo de hoy en la carpeta de Drive
-    const fecha = todayStr();
-    const fileName = 'HealthMetrics-' + fecha;
-    const listUrl = 'https://www.googleapis.com/drive/v3/files'
-      + '?q=' + encodeURIComponent("'" + DRIVE_FOLDER_ID + "' in parents and name contains '" + fileName + "' and trashed=false")
-      + '&fields=files(id,name)'
-      + '&key=' + DRIVE_API_KEY;
-
-    const listRes = await fetch(listUrl);
-    if (!listRes.ok) throw new Error('Error listando Drive: ' + listRes.status);
-    const listData = await listRes.json();
-
-    if (!listData.files || listData.files.length === 0) {
-      // No hay archivo de hoy — intentar con ayer
-      const ayer = new Date();
-      ayer.setDate(ayer.getDate() - 1);
-      const ayerStr = ayer.getFullYear() + '-'
-        + String(ayer.getMonth()+1).padStart(2,'0') + '-'
-        + String(ayer.getDate()).padStart(2,'0');
-      const fileNameAyer = 'HealthMetrics-' + ayerStr;
-      const listUrl2 = 'https://www.googleapis.com/drive/v3/files'
-        + '?q=' + encodeURIComponent("'" + DRIVE_FOLDER_ID + "' in parents and name contains '" + fileNameAyer + "' and trashed=false")
-        + '&fields=files(id,name)'
-        + '&key=' + DRIVE_API_KEY;
-      const listRes2 = await fetch(listUrl2);
-      const listData2 = await listRes2.json();
-      if (!listData2.files || listData2.files.length === 0) {
-        badge.textContent = 'Sin datos recientes en Drive';
-        badge.className = 'status-loading';
-        return;
-      }
-      await loadFileById(listData2.files[0].id, ayerStr);
-      return;
+// ── Panel detalle ──────────────────────────────────────────────────
+function openDetail(label,val,unit,sub){
+  const mk=Object.keys(KPI_META).find(k=>label.includes(k));
+  const m=mk?KPI_META[mk]:null;
+  document.getElementById('d-title').textContent=label;
+  const dv=document.getElementById('d-val');
+  dv.textContent=val+' '+unit;
+  dv.className='detail-val '+(sub.includes('Top')||sub==='ok'?'ok':sub.includes('URGENTE')||sub.includes('alert')?'alert':'warn');
+  const tipo=m?m.tipo:'diario';
+  const bd=document.getElementById('d-badge');
+  bd.textContent=tipo==='diario'?'Dato diario (wearable)':tipo==='analítica'?'Analítica laboratorio':'Manual';
+  bd.className='detail-badge '+(tipo==='diario'?'bdg-diario':tipo==='analítica'?'bdg-analitica':'bdg-manual');
+  const rows=[['Descripción',m?m.desc:'Indicador del plan centenario'],['Objetivo',m?m.objetivo:'—'],['Subtítulo',sub]].filter(r=>r[1]&&r[1]!=='—');
+  document.getElementById('d-rows').innerHTML=rows.map(r=>`<div class="drow"><span class="dlabel">${r[0]}</span><span class="ddata">${r[1]}</span></div>`).join('');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail(e){if(e.target.id==='detail-overlay')document.getElementById('detail-overlay').classList.remove('open');}
+// ── Log de datos ───────────────────────────────────────────────────
+function updateDataLog(fileName,fecha,values){
+  const src=document.getElementById('log-source');
+  if(src)src.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:11px">
+    <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Archivo</div><div style="font-weight:600;color:#1E293B;font-family:monospace">${fileName}</div></div>
+    <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Fecha</div><div style="font-weight:600;color:#1E293B">${fecha}</div></div>
+    <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Cargado a las</div><div style="font-weight:600;color:#1E293B">${new Date().toLocaleTimeString('es-ES')}</div></div>
+  </div>`;
+  const ve=document.getElementById('log-values');
+  if(ve)ve.innerHTML=values.map(v=>`<div class="log-row">
+    <div class="log-col" title="${v.col}">${v.col.split('(')[0].trim()}</div>
+    <div class="log-name">${v.nombre}</div>
+    <div class="log-val">${v.valor!==null?v.valor:'—'} ${v.unidad}</div>
+    <div class="log-tipo ${v.tipo==='diario'?'lt-d':'lt-a'}">${v.tipo}</div>
+  </div>`).join('');
+}
+// ── Carga desde Google Drive ───────────────────────────────────────
+async function loadFromDrive(){
+  const badge=document.getElementById('status-badge');
+  badge.textContent='Cargando...';badge.className='status-loading';
+  try{
+    for(let back=0;back<=1;back++){
+      const d=new Date();d.setDate(d.getDate()-back);
+      const fecha=dateStr(d);
+      const name='HealthMetrics-'+fecha;
+      const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and name contains '"+name+"' and trashed=false");
+      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&key='+DRIVE_API_KEY);
+      if(!r.ok)continue;
+      const data=await r.json();
+      if(data.files&&data.files.length>0){await loadFileById(data.files[0].id,fecha,data.files[0].name);return;}
     }
-
-    // Cargar el archivo encontrado
-    await loadFileById(listData.files[0].id, fecha);
-
-  } catch(e) {
-    console.error('Drive error:', e);
-    badge.textContent = 'Datos del informe (may-2026)';
-    badge.className = 'status-loading';
-  }
+    badge.textContent='Sin datos recientes';badge.className='status-loading';
+  }catch(e){console.error(e);badge.textContent='Datos estáticos (may-2026)';badge.className='status-loading';}
 }
-
-async function loadFileById(fileId, fecha) {
-  const badge = document.getElementById('status-badge');
-  // Exportar el Google Sheet como CSV
-  const csvUrl = 'https://docs.google.com/spreadsheets/d/' + fileId + '/export?format=csv';
-  const res = await fetch(csvUrl);
-  if (!res.ok) throw new Error('Error descargando CSV: ' + res.status);
-  const text = await res.text();
-  const rows = parseCSV(text);
-  if (rows.length < 2) throw new Error('Archivo vacío');
-  const headers = rows[0];
-
-  // Extraer valores usando los nombres exactos de columna del archivo
-  const fc    = findVal(rows, headers, COL_MAP.FC_reposo);
-  const sueno = findVal(rows, headers, COL_MAP.Sueno);
-  const prof  = findVal(rows, headers, COL_MAP.Sueno_prof);
-  const rem   = findVal(rows, headers, COL_MAP.Sueno_REM);
-  const peso  = findVal(rows, headers, COL_MAP.Peso);
-  const grasa = findVal(rows, headers, COL_MAP.Grasa);
-  const musc  = findVal(rows, headers, COL_MAP.Musculo);
-  const pasos = sumVal(rows, headers, COL_MAP.Pasos);
-
-  // Actualizar array METRICAS con valores reales
-  function setMetrica(paramFragment, val, decimals) {
-    if (val === null) return;
-    const m = METRICAS.find(x => x.param.toLowerCase().includes(paramFragment.toLowerCase()));
-    if (m) { m.val = val.toFixed(decimals); m.fuente = 'Health Auto Export · ' + fecha; }
-  }
-  setMetrica('FC reposo',   fc,    0);
-  setMetrica('Sueño (h',    sueno, 2);
-  setMetrica('Grasa corp',  grasa, 1);
-  setMetrica('Masa musc',   musc,  1);
-  setMetrica('Peso (kg',    peso,  1);
-
-  // Actualizar KPIs del header
-  KPIS_RESUMEN.forEach(k => {
-    if (k.label === 'FC reposo' && fc)    k.val = fc.toFixed(0);
-    if (k.label === 'Sueño'    && sueno)  k.val = sueno.toFixed(2) + 'h';
+async function loadFileById(fileId,fecha,fileName){
+  const badge=document.getElementById('status-badge');
+  const res=await fetch('https://docs.google.com/spreadsheets/d/'+fileId+'/export?format=csv');
+  if(!res.ok)throw new Error('CSV '+res.status);
+  const rows=parseCSV(await res.text());
+  if(rows.length<2)throw new Error('vacío');
+  const h=rows[0];
+  const fc=findVal(rows,h,COL_MAP.FC_reposo);
+  const sueno=findVal(rows,h,COL_MAP.Sueno);
+  const prof=findVal(rows,h,COL_MAP.Sueno_prof);
+  const rem=findVal(rows,h,COL_MAP.Sueno_REM);
+  const peso=findVal(rows,h,COL_MAP.Peso);
+  const grasa=findVal(rows,h,COL_MAP.Grasa);
+  const musc=findVal(rows,h,COL_MAP.Musculo);
+  const pasos=sumVal(rows,h,COL_MAP.Pasos);
+  function setM(frag,val,dec){if(val===null)return;const m=METRICAS.find(x=>x.param.toLowerCase().includes(frag.toLowerCase()));if(m){m.val=val.toFixed(dec);m.fuente='Health Auto Export · '+fecha;}}
+  setM('FC reposo',fc,0);setM('Sueño (h',sueno,2);setM('Grasa corp',grasa,1);setM('Masa musc',musc,1);setM('Peso (kg',peso,1);
+  KPIS_RESUMEN.forEach(k=>{
+    if(k.label==='FC reposo'&&fc)k.val=fc.toFixed(0);
+    if(k.label==='Sueño'&&sueno)k.val=sueno.toFixed(2)+'h';
   });
-
-  badge.textContent = 'Datos actualizados · ' + fecha + ' ✓';
-  badge.className = 'status-ok';
-  document.getElementById('last-update').textContent = new Date().toLocaleString('es-ES');
-  renderKPIs();
-  renderProgressBars();
-  renderMetrics();
+  updateDataLog(fileName||('HealthMetrics-'+fecha),fecha,[
+    {col:COL_MAP.FC_reposo, nombre:'FC en reposo',  valor:fc?fc.toFixed(0):null,   unidad:'bpm',   tipo:'diario'},
+    {col:COL_MAP.Sueno,     nombre:'Sueño total',   valor:sueno?sueno.toFixed(2):null,unidad:'h',  tipo:'diario'},
+    {col:COL_MAP.Sueno_prof,nombre:'Sueño profundo',valor:prof?prof.toFixed(2):null, unidad:'h',  tipo:'diario'},
+    {col:COL_MAP.Sueno_REM, nombre:'Sueño REM',     valor:rem?rem.toFixed(2):null,   unidad:'h',  tipo:'diario'},
+    {col:COL_MAP.Peso,      nombre:'Peso',          valor:peso?peso.toFixed(1):null, unidad:'kg', tipo:'diario'},
+    {col:COL_MAP.Grasa,     nombre:'Grasa corporal',valor:grasa?grasa.toFixed(1):null,unidad:'%', tipo:'diario'},
+    {col:COL_MAP.Musculo,   nombre:'Masa muscular', valor:musc?musc.toFixed(1):null, unidad:'kg', tipo:'diario'},
+    {col:COL_MAP.Pasos,     nombre:'Pasos totales', valor:pasos?Math.round(pasos):null,unidad:'pasos',tipo:'acumulado'},
+  ]);
+  badge.textContent='Actualizado · '+fecha+' ✓';badge.className='status-ok';
+  document.getElementById('last-update').textContent=new Date().toLocaleString('es-ES');
+  renderKPIs();renderProgressBars();renderMetrics();
 }
-
 // Navegación
 function show(id) {
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
@@ -1221,8 +1189,19 @@ renderSteps('steps-fase4', STEPS_FASE4);
 renderSteps('steps-fase5', STEPS_FASE5);
 document.getElementById('last-update').textContent = new Date().toLocaleDateString('es-ES');
 
-// Cargar desde Google Drive
+// Cargar desde Sheets (si está configurado)
 loadFromDrive();
 </script>
+
+<!-- Panel detalle KPI -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-box">
+    <button class="detail-close" onclick="document.getElementById('detail-overlay').classList.remove('open')">✕</button>
+    <div class="detail-title" id="d-title"></div>
+    <div id="d-badge" class="detail-badge"></div>
+    <div class="detail-val ok" id="d-val"></div>
+    <div id="d-rows"></div>
+  </div>
+</div>
 </body>
 </html>
