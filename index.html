@@ -174,38 +174,8 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:#F8FAFC}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
-/* ── PANEL DETALLE KPI ── */
-.kpi{cursor:pointer;transition:box-shadow .15s}
-.kpi:hover{box-shadow:0 0 0 2px #2563EB33}
-.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
-  z-index:200;align-items:center;justify-content:center}
-.detail-overlay.open{display:flex}
-.detail-box{background:#fff;border-radius:14px;padding:24px 26px;max-width:420px;
-  width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative}
-.detail-close{position:absolute;top:14px;right:16px;background:none;border:none;
-  font-size:20px;cursor:pointer;color:#94A3B8}
-.detail-title{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:6px;padding-right:24px}
-.detail-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;
-  display:inline-block;margin-bottom:10px}
-.bdg-diario{background:#DBEAFE;color:#1E40AF}
-.bdg-analitica{background:#FEF3C7;color:#92400E}
-.bdg-manual{background:#F3E8FF;color:#6B21A8}
-.detail-val{font-size:36px;font-weight:800;line-height:1;margin:8px 0 14px}
-.drow{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:11.5px}
-.drow:last-child{border-bottom:none}
-.dlabel{color:#94A3B8;width:90px;flex-shrink:0}
-.ddata{color:#334155;flex:1;line-height:1.5}
-/* ── LOG ── */
-.log-row{display:grid;grid-template-columns:160px 1fr 80px 70px;
-  gap:8px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:11px;align-items:center}
-.log-row:last-child{border-bottom:none}
-.log-col{color:#94A3B8;font-family:monospace;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.log-name{color:#475569}
-.log-val{font-weight:700;color:#1E293B;text-align:right}
-.log-tipo{font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;text-align:center}
-.lt-d{background:#DBEAFE;color:#1E40AF}
-.lt-a{background:#D1FAE5;color:#065F46}
 
+.kpi{cursor:pointer;transition:box-shadow .15s}.kpi:hover{box-shadow:0 0 0 2px #2563EB33}
 </style>
 </head>
 <body>
@@ -213,16 +183,11 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años con calidad de vida</p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px">v09/05/2026 22:22:07</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
     <div class="last-update">Actualización: <span id="last-update">—</span></div>
-    <div style="margin-top:4px">
-      <button onclick="resetAPIKey()" style="font-size:10px;color:#64748B;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">
-        Cambiar API key
-      </button>
-    </div>
   </div>
 </header>
 
@@ -582,22 +547,26 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
     <p style="color:#94A3B8;font-size:12px">Se rellena automáticamente al cargar datos de Drive.</p>
   </div>
   <div class="sec" style="margin-top:16px">Valores extraídos del CSV</div>
-  <div class="card">
-    <div class="log-row" style="font-size:10px;color:#94A3B8;font-weight:600;border-bottom:1px solid #E2E8F0;padding-bottom:4px">
-      <div>Columna CSV</div><div>Métrica</div><div style="text-align:right">Valor</div><div style="text-align:center">Tipo</div>
-    </div>
-    <div id="log-values"><p style="color:#94A3B8;font-size:12px;padding:8px 0">Esperando datos...</p></div>
+  <div class="card" id="log-values">
+    <p style="color:#94A3B8;font-size:12px;padding:8px 0">Esperando datos...</p>
   </div>
   <div class="sec" style="margin-top:16px">Notas metodológicas</div>
   <div class="card">
     <div style="font-size:11.5px;color:#475569;line-height:1.9">
-      <strong style="color:#1E293B">Actualización:</strong> automática cada mañana a las 07:00 (Health Auto Export → Google Drive).<br>
-      <strong style="color:#1E293B">Datos diarios:</strong> FC reposo · peso · grasa · músculo · sueño — valor puntual del día.<br>
+      <strong style="color:#1E293B">Actualización:</strong> automática cada mañana a las 07:00 (Health Auto Export).<br>
+      <strong style="color:#1E293B">Datos diarios:</strong> FC reposo · peso · grasa · músculo · sueño — valor puntual.<br>
       <strong style="color:#1E293B">Datos acumulados:</strong> pasos — suma de todas las horas del día.<br>
-      <strong style="color:#1E293B">Sueño:</strong> registrado en franja 00:00h (noche anterior).<br>
       <strong style="color:#1E293B">VO₂max:</strong> solo en Garmin Connect — actualización manual.<br>
       <strong style="color:#1E293B">Analíticas</strong> (LDL, HDL, vit D...): actualización manual semestral.
     </div>
+  </div>
+  <div class="sec" style="margin-top:16px">API key</div>
+  <div class="card">
+    <button onclick="localStorage.removeItem('drive_api_key');location.reload()" 
+      style="background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">
+      Cambiar API key de Google Drive
+    </button>
+    <p style="font-size:11px;color:#94A3B8;margin-top:6px">Úsalo si la API key ha cambiado o ha dejado de funcionar.</p>
   </div>
 </div>
 </main>
@@ -607,24 +576,24 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 //  CONFIGURACIÓN — edita estas dos líneas con tus datos
 // ════════════════════════════════════════════════════════════════════
 const DRIVE_FOLDER_ID = '1-EVHafsuevOe1iT471zk5lgYNRQKx--8';
-const DRIVE_API_KEY   = localStorage.getItem('drive_api_key') || '';
+const DRIVE_API_KEY = localStorage.getItem('drive_api_key') || '';
 const COL_MAP = {
   FC_reposo:  'Frecuencia Cardiaca en Reposo (count/min)',
-  Sueno:      'An\u00e1lisis del Sue\u00f1o [Central] (hr)',
-  Sueno_prof: 'An\u00e1lisis del Sue\u00f1o [Profundo] (hr)',
-  Sueno_REM:  'An\u00e1lisis del Sue\u00f1o [REM] (hr)',
+  Sueno:      'Análisis del Sueño [Central] (hr)',
+  Sueno_prof: 'Análisis del Sueño [Profundo] (hr)',
+  Sueno_REM:  'Análisis del Sueño [REM] (hr)',
   Peso:       'Peso (kg)',
   Grasa:      'Porcentaje de grasa corporal (%)',
   Musculo:    'Masa Corporal Magra (kg)',
   Pasos:      'Conteo de Pasos (count)',
 };
 const KPI_META = {
-  'VO\u2082max':    {tipo:'manual',    desc:'Estimaci\u00f3n Garmin. No disponible en Apple Health.', objetivo:'\u2265 52 ml/kg/min (2027)'},
-  'LDL':       {tipo:'anal\u00edtica',desc:'Colesterol LDL. Anal\u00edtica de laboratorio.', objetivo:'< 70 mg/dL (urgente)'},
-  'FC reposo': {tipo:'diario',    desc:'Primer registro nocturno/matutino de Garmin via Apple Health.', objetivo:'\u2264 58 bpm (2027)'},
-  'Sue\u00f1o':     {tipo:'diario',    desc:'Horas sue\u00f1o total (profundo+ligero+REM). Noche anterior.', objetivo:'\u2265 7.5 h/noche'},
-  'Vitamina D':{tipo:'anal\u00edtica',desc:'Niveles s\u00e9ricos. Anal\u00edtica de laboratorio.', objetivo:'\u2265 40 ng/mL'},
-  'HbA1c':     {tipo:'anal\u00edtica',desc:'Hemoglobina glicosilada. Control gluc\u00e9mico 3 meses.', objetivo:'< 5.5%'},
+  'VO₂max':    {tipo:'manual',    desc:'Estimación Garmin. No disponible en Apple Health.', objetivo:'≥ 52 ml/kg/min (2027)'},
+  'LDL':       {tipo:'analítica',desc:'Colesterol LDL. Analítica de laboratorio.', objetivo:'< 70 mg/dL (urgente)'},
+  'FC reposo': {tipo:'diario',    desc:'Primer registro nocturno/matutino de Garmin via Apple Health.', objetivo:'≤ 58 bpm (2027)'},
+  'Sueño':     {tipo:'diario',    desc:'Horas sueño total (profundo+ligero+REM). Noche anterior.', objetivo:'≥ 7.5 h/noche'},
+  'Vitamina D':{tipo:'analítica',desc:'Niveles séricos. Analítica de laboratorio.', objetivo:'≥ 40 ng/mL'},
+  'HbA1c':     {tipo:'analítica',desc:'Hemoglobina glicosilada. Control glucémico 3 meses.', objetivo:'< 5.5%'},
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -822,10 +791,10 @@ https://docs.google.com/spreadsheets/d/TU_ID/export?format=csv&gid=0`
     n:'2', title:'Editar el archivo index.html del dashboard',
     desc:'Abre el archivo index.html (este dashboard) con cualquier editor de texto (Bloc de notas en Windows, TextEdit en Mac). Busca las líneas al principio del script que dicen SHEETS_ID y reemplaza el valor.',
     code:`// Busca estas líneas cerca del principio del script:
-// Drive config — ver arriba
+const SHEETS_ID   = 'TU_SHEETS_ID_AQUI';
 const SHEETS_NAME = 'Dashboard';
 
-// Conectado a Google Drive — configuración en DRIVE_FOLDER_ID y DRIVE_API_KEY
+// Reemplaza TU_SHEETS_ID_AQUI por el ID real de tu hoja.
 // Ejemplo:
 const SHEETS_ID   = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms';
 const SHEETS_NAME = 'Dashboard';`
@@ -905,11 +874,9 @@ const STEPS_FASE5 = [
 function renderKPIs() {
   const g = document.getElementById('kpi-grid');
   g.innerHTML = KPIS_RESUMEN.map(k => {
-    const lbl = k.label.replace(/'/g,"\\'");
-    const val = String(k.val).replace(/'/g,"\\'");
-    const sub = k.sub.replace(/'/g,"\\'");
-    return `<div class="kpi" onclick="openDetail('${lbl}','${val}','${k.unit}','${sub}')">
-      <div class="kpi-label">${k.label} <span style="color:#CBD5E1;font-size:9px">▸</span></div>
+    const l2 = k.label.replace(/'/g,"\\'"), v2 = String(k.val).replace(/'/g,"\\'"), s2 = k.sub.replace(/'/g,"\\'");
+    return `<div class="kpi" onclick="openDetail('${l2}','${v2}','${k.unit}','${s2}')" style="cursor:pointer">
+      <div class="kpi-label">${k.label} <span style="color:#CBD5E1;font-size:9px">&#9656;</span></div>
       <div class="kpi-value ${k.status}">${k.val} <span style="font-size:13px;font-weight:400">${k.unit}</span></div>
       <div class="kpi-sub">${k.sub}</div>
       <div class="kpi-bar"><div class="kpi-fill" style="width:${k.pct}%;background:${STATUS_COLORS[k.status]}"></div></div>
@@ -1086,42 +1053,44 @@ function sumVal(rows,h,col){
   for(let i=1;i<rows.length;i++){const v=rows[i][idx]?.trim();if(v&&v!==''){t+=parseFloat(v)||0;f=true;}}
   return f?t:null;
 }
-// ── Panel detalle ──────────────────────────────────────────────────
+// ── Panel detalle KPI ─────────────────────────────────────────────
 function openDetail(label,val,unit,sub){
   const mk=Object.keys(KPI_META).find(k=>label.includes(k));
   const m=mk?KPI_META[mk]:null;
   document.getElementById('d-title').textContent=label;
   const dv=document.getElementById('d-val');
   dv.textContent=val+' '+unit;
-  dv.className='detail-val '+(sub.includes('Top')||sub==='ok'?'ok':sub.includes('URGENTE')||sub.includes('alert')?'alert':'warn');
+  dv.style.color=sub.includes('Top')||sub==='ok'?'#15803D':sub.includes('URGENTE')||sub.includes('alert')?'#DC2626':'#B45309';
   const tipo=m?m.tipo:'diario';
   const bd=document.getElementById('d-badge');
   bd.textContent=tipo==='diario'?'Dato diario (wearable)':tipo==='analítica'?'Analítica laboratorio':'Manual';
-  bd.className='detail-badge '+(tipo==='diario'?'bdg-diario':tipo==='analítica'?'bdg-analitica':'bdg-manual');
+  bd.style.cssText='font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:10px;'+(tipo==='diario'?'background:#DBEAFE;color:#1E40AF':tipo==='analítica'?'background:#FEF3C7;color:#92400E':'background:#F3E8FF;color:#6B21A8');
   const rows=[['Descripción',m?m.desc:'Indicador del plan centenario'],['Objetivo',m?m.objetivo:'—'],['Subtítulo',sub]].filter(r=>r[1]&&r[1]!=='—');
-  document.getElementById('d-rows').innerHTML=rows.map(r=>`<div class="drow"><span class="dlabel">${r[0]}</span><span class="ddata">${r[1]}</span></div>`).join('');
-  document.getElementById('detail-overlay').classList.add('open');
+  document.getElementById('d-rows').innerHTML=rows.map(r=>`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:11.5px"><span style="color:#94A3B8;width:90px;flex-shrink:0">${r[0]}</span><span style="color:#334155;flex:1">${r[1]}</span></div>`).join('');
+  document.getElementById('detail-overlay').style.display='flex';
 }
 function closeDetail(e){if(e.target.id==='detail-overlay')document.getElementById('detail-overlay').classList.remove('open');}
-// ── Log de datos ───────────────────────────────────────────────────
+// ── Log datos ─────────────────────────────────────────────────────
 function updateDataLog(fileName,fecha,values){
   const src=document.getElementById('log-source');
   if(src)src.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:11px">
     <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Archivo</div><div style="font-weight:600;color:#1E293B;font-family:monospace">${fileName}</div></div>
     <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Fecha</div><div style="font-weight:600;color:#1E293B">${fecha}</div></div>
-    <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Cargado a las</div><div style="font-weight:600;color:#1E293B">${new Date().toLocaleTimeString('es-ES')}</div></div>
+    <div><div style="color:#94A3B8;font-size:10px;margin-bottom:3px">Cargado</div><div style="font-weight:600;color:#1E293B">${new Date().toLocaleTimeString('es-ES')}</div></div>
   </div>`;
   const ve=document.getElementById('log-values');
-  if(ve)ve.innerHTML=values.map(v=>`<div class="log-row">
-    <div class="log-col" title="${v.col}">${v.col.split('(')[0].trim()}</div>
-    <div class="log-name">${v.nombre}</div>
-    <div class="log-val">${v.valor!==null?v.valor:'—'} ${v.unidad}</div>
-    <div class="log-tipo ${v.tipo==='diario'?'lt-d':'lt-a'}">${v.tipo}</div>
-  </div>`).join('');
+  if(ve)ve.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#F8FAFC"><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Columna CSV</th><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Métrica</th><th style="text-align:right;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Valor</th><th style="text-align:center;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Tipo</th></tr></thead><tbody>'+
+    values.map(v=>`<tr style="border-bottom:1px solid #F1F5F9"><td style="padding:5px 8px;color:#94A3B8;font-size:10px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.col.split('(')[0].trim()}</td><td style="padding:5px 8px;color:#475569">${v.nombre}</td><td style="padding:5px 8px;font-weight:700;color:#1E293B;text-align:right">${v.valor!==null?v.valor:'—'} ${v.unidad}</td><td style="padding:5px 8px;text-align:center"><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;${v.tipo==='diario'?'background:#DBEAFE;color:#1E40AF':'background:#D1FAE5;color:#065F46'}">${v.tipo}</span></td></tr>`).join('')+'</tbody></table>';
 }
-// ── Carga desde Google Drive ───────────────────────────────────────
+// ── Carga Google Drive ────────────────────────────────────────────
 async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
+  let apiKey=localStorage.getItem('drive_api_key');
+  if(!apiKey){
+    apiKey=prompt('Introduce tu Google API Key:\n(se guarda solo en este navegador)');
+    if(apiKey&&apiKey.trim())localStorage.setItem('drive_api_key',apiKey.trim());
+    else{badge.textContent='Sin API key';badge.className='status-loading';return;}
+  }
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
     for(let back=0;back<=1;back++){
@@ -1129,15 +1098,15 @@ async function loadFromDrive(){
       const fecha=dateStr(d);
       const name='HealthMetrics-'+fecha;
       const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and name contains '"+name+"' and trashed=false");
-      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&key='+DRIVE_API_KEY);
+      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&key='+apiKey);
       if(!r.ok)continue;
       const data=await r.json();
-      if(data.files&&data.files.length>0){await loadFileById(data.files[0].id,fecha,data.files[0].name);return;}
+      if(data.files&&data.files.length>0){await loadFileById(data.files[0].id,fecha,data.files[0].name,apiKey);return;}
     }
     badge.textContent='Sin datos recientes';badge.className='status-loading';
-  }catch(e){console.error(e);badge.textContent='Datos estáticos (may-2026)';badge.className='status-loading';}
+  }catch(e){console.error(e);badge.textContent='Error al cargar';badge.className='status-error';}
 }
-async function loadFileById(fileId,fecha,fileName){
+async function loadFileById(fileId,fecha,fileName,apiKey){
   const badge=document.getElementById('status-badge');
   const res=await fetch('https://docs.google.com/spreadsheets/d/'+fileId+'/export?format=csv');
   if(!res.ok)throw new Error('CSV '+res.status);
@@ -1159,13 +1128,13 @@ async function loadFileById(fileId,fecha,fileName){
     if(k.label==='Sueño'&&sueno)k.val=sueno.toFixed(2)+'h';
   });
   updateDataLog(fileName||('HealthMetrics-'+fecha),fecha,[
-    {col:COL_MAP.FC_reposo, nombre:'FC en reposo',  valor:fc?fc.toFixed(0):null,   unidad:'bpm',   tipo:'diario'},
-    {col:COL_MAP.Sueno,     nombre:'Sueño total',   valor:sueno?sueno.toFixed(2):null,unidad:'h',  tipo:'diario'},
-    {col:COL_MAP.Sueno_prof,nombre:'Sueño profundo',valor:prof?prof.toFixed(2):null, unidad:'h',  tipo:'diario'},
-    {col:COL_MAP.Sueno_REM, nombre:'Sueño REM',     valor:rem?rem.toFixed(2):null,   unidad:'h',  tipo:'diario'},
-    {col:COL_MAP.Peso,      nombre:'Peso',          valor:peso?peso.toFixed(1):null, unidad:'kg', tipo:'diario'},
-    {col:COL_MAP.Grasa,     nombre:'Grasa corporal',valor:grasa?grasa.toFixed(1):null,unidad:'%', tipo:'diario'},
-    {col:COL_MAP.Musculo,   nombre:'Masa muscular', valor:musc?musc.toFixed(1):null, unidad:'kg', tipo:'diario'},
+    {col:COL_MAP.FC_reposo, nombre:'FC en reposo',  valor:fc?fc.toFixed(0):null,    unidad:'bpm',   tipo:'diario'},
+    {col:COL_MAP.Sueno,     nombre:'Sueño total',   valor:sueno?sueno.toFixed(2):null,unidad:'h',   tipo:'diario'},
+    {col:COL_MAP.Sueno_prof,nombre:'Sueño profundo',valor:prof?prof.toFixed(2):null, unidad:'h',   tipo:'diario'},
+    {col:COL_MAP.Sueno_REM, nombre:'Sueño REM',     valor:rem?rem.toFixed(2):null,   unidad:'h',   tipo:'diario'},
+    {col:COL_MAP.Peso,      nombre:'Peso',          valor:peso?peso.toFixed(1):null, unidad:'kg',  tipo:'diario'},
+    {col:COL_MAP.Grasa,     nombre:'Grasa corporal',valor:grasa?grasa.toFixed(1):null,unidad:'%',  tipo:'diario'},
+    {col:COL_MAP.Musculo,   nombre:'Masa muscular', valor:musc?musc.toFixed(1):null, unidad:'kg',  tipo:'diario'},
     {col:COL_MAP.Pasos,     nombre:'Pasos totales', valor:pasos?Math.round(pasos):null,unidad:'pasos',tipo:'acumulado'},
   ]);
   badge.textContent='Actualizado · '+fecha+' ✓';badge.className='status-ok';
@@ -1195,33 +1164,18 @@ renderSteps('steps-fase5', STEPS_FASE5);
 document.getElementById('last-update').textContent = new Date().toLocaleDateString('es-ES');
 
 // Cargar desde Sheets (si está configurado)
-// Cargar API key desde localStorage o pedir al usuario
-(function() {
-  let key = localStorage.getItem('drive_api_key');
-  if (!key) {
-    key = prompt(
-      'Introduce tu Google API Key para cargar los datos de Drive:\n' +
-      '(Se guardará solo en este navegador, nunca en el código)'
-    );
-    if (key && key.trim()) {
-      localStorage.setItem('drive_api_key', key.trim());
-    }
-  }
-  function resetAPIKey() {
-  localStorage.removeItem('drive_api_key');
-  location.reload();
-}
-loadFromDrive();
+(function(){
+  loadFromDrive();
 })();
 </script>
 
 <!-- Panel detalle KPI -->
-<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
-  <div class="detail-box">
-    <button class="detail-close" onclick="document.getElementById('detail-overlay').classList.remove('open')">✕</button>
-    <div class="detail-title" id="d-title"></div>
-    <div id="d-badge" class="detail-badge"></div>
-    <div class="detail-val ok" id="d-val"></div>
+<div id="detail-overlay" onclick="closeDetail(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:24px 26px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative">
+    <button onclick="document.getElementById('detail-overlay').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8">✕</button>
+    <div id="d-title" style="font-size:15px;font-weight:700;color:#1E293B;margin-bottom:6px;padding-right:24px"></div>
+    <div id="d-badge" style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:10px"></div>
+    <div id="d-val" style="font-size:36px;font-weight:800;line-height:1;margin:8px 0 14px"></div>
     <div id="d-rows"></div>
   </div>
 </div>
