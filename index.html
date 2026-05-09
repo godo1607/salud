@@ -218,6 +218,11 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
     <div class="last-update">Actualización: <span id="last-update">—</span></div>
+    <div style="margin-top:4px">
+      <button onclick="resetAPIKey()" style="font-size:10px;color:#64748B;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">
+        Cambiar API key
+      </button>
+    </div>
   </div>
 </header>
 
@@ -1202,7 +1207,11 @@ document.getElementById('last-update').textContent = new Date().toLocaleDateStri
       localStorage.setItem('drive_api_key', key.trim());
     }
   }
-  loadFromDrive();
+  function resetAPIKey() {
+  localStorage.removeItem('drive_api_key');
+  location.reload();
+}
+loadFromDrive();
 })();
 </script>
 
