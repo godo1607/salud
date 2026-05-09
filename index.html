@@ -1110,7 +1110,7 @@ async function loadFromDrive(){
   }
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    for(let back=0;back<=1;back++){
+    for(let back=0;back<=7;back++){
       const d=new Date();d.setDate(d.getDate()-back);
       const fecha=dateStr(d);
       const name='HealthMetrics-'+fecha;
