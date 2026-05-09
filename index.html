@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v2026-05-09T22:47:20Z</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v2026-05-09T22:59:13Z</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -584,7 +584,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 //  CONFIGURACIÓN — edita estas dos líneas con tus datos
 // ════════════════════════════════════════════════════════════════════
 const DRIVE_FOLDER_ID = '1-EVHafsuevOe1iT471zk5lgYNRQKx--8';
-const DRIVE_API_KEY = localStorage.getItem('drive_api_key') || '';
+// API key no necesaria — se usa Google Apps Script como intermediario
 const COL_MAP = {
   FC_reposo:  'Frecuencia Cardiaca en Reposo (count/min)',
   Sueno:      'Análisis del Sueño [Central] (hr)',
@@ -1102,53 +1102,28 @@ function updateDataLog(fileName,fecha,values){
 // ── Carga Google Drive ────────────────────────────────────────────
 async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
-  let apiKey=localStorage.getItem('drive_api_key')||'';
-  if(!apiKey){
-    badge.textContent='Introduce la API key en pestaña Datos cargados';
-    badge.className='status-loading';
-    return;
-  }
   badge.textContent='Cargando...';badge.className='status-loading';
+  const st=document.getElementById('api-key-status');
   try{
-    // Listar todos los archivos de la carpeta, ordenados por fecha desc
-    const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and trashed=false");
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)&orderBy=name+desc&pageSize=20&key='+apiKey);
-    if(!r.ok){
-      const errTxt=await r.text();
-      badge.textContent='Error API: '+r.status;badge.className='status-error';
-      const st=document.getElementById('api-key-status');
-      if(st){st.textContent='Error '+r.status+': '+errTxt.substring(0,200);st.style.color='#DC2626';}
-      return;
-    }
-    const data=await r.json();
-    const st=document.getElementById('api-key-status');
-    if(!data.files||data.files.length===0){
-      badge.textContent='Carpeta Drive vacía';badge.className='status-error';
-      if(st){st.textContent='No hay archivos en la carpeta Plan Centenario de Drive.';st.style.color='#DC2626';}
-      return;
-    }
-    // Mostrar todos los archivos encontrados para diagnóstico
-    if(st){st.textContent='Archivos encontrados: '+data.files.map(f=>f.name).join(', ');st.style.color='#15803D';}
-    // Buscar el más reciente que contenga HealthMetrics
-    const hm=data.files.find(f=>f.name.includes('HealthMetrics'));
-    if(!hm){
-      badge.textContent='Sin archivos HealthMetrics';badge.className='status-error';
-      if(st){st.textContent='Archivos en carpeta: '+data.files.map(f=>f.name).join(', ');st.style.color='#DC2626';}
-      return;
-    }
-    // Extraer fecha del nombre
-    const match=hm.name.match(/(\d{4}-\d{2}-\d{2})/);
+    const res=await fetch('https://script.google.com/macros/s/AKfycbz7Y2zRmyUs0aQc0RV8kzW0538qF-wpKgKwHm68e3BOWLfjlW3CcxnddAHKF4Oz3xPP/exec');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error)throw new Error(data.error);
+    // Extraer fecha del nombre del archivo
+    const match=data.fileName.match(/(\d{4}-\d{2}-\d{2})/);
     const fecha=match?match[1]:dateStr(new Date());
-    await loadFileById(hm.id,fecha,hm.name,apiKey);
-    return;
-  }catch(e){console.error(e);badge.textContent='Error: '+e.message;badge.className='status-error';const ste2=document.getElementById('api-key-status');if(ste2){ste2.textContent='Error técnico: '+e.message;ste2.style.color='#DC2626';}}
+    // Parsear CSV directamente
+    const rows=parseCSV(data.csv);
+    if(rows.length<2)throw new Error('Archivo vacío');
+    await processRows(rows,fecha,data.fileName);
+  }catch(e){
+    console.error(e);
+    badge.textContent='Error: '+e.message;badge.className='status-error';
+    if(st){st.textContent='Error: '+e.message;st.style.color='#DC2626';}
+  }
 }
-async function loadFileById(fileId,fecha,fileName,apiKey){
+async function processRows(rows,fecha,fileName){
   const badge=document.getElementById('status-badge');
-  const res=await fetch('https://docs.google.com/spreadsheets/d/'+fileId+'/export?format=csv');
-  if(!res.ok)throw new Error('CSV '+res.status);
-  const rows=parseCSV(await res.text());
-  if(rows.length<2)throw new Error('vacío');
   const h=rows[0];
   const fc=findVal(rows,h,COL_MAP.FC_reposo);
   const sueno=findVal(rows,h,COL_MAP.Sueno);
@@ -1164,7 +1139,7 @@ async function loadFileById(fileId,fecha,fileName,apiKey){
     if(k.label==='FC reposo'&&fc)k.val=fc.toFixed(0);
     if(k.label==='Sueño'&&sueno)k.val=sueno.toFixed(2)+'h';
   });
-  updateDataLog(fileName||('HealthMetrics-'+fecha),fecha,[
+  updateDataLog(fileName,fecha,[
     {col:COL_MAP.FC_reposo, nombre:'FC en reposo',  valor:fc?fc.toFixed(0):null,    unidad:'bpm',   tipo:'diario'},
     {col:COL_MAP.Sueno,     nombre:'Sueño total',   valor:sueno?sueno.toFixed(2):null,unidad:'h',   tipo:'diario'},
     {col:COL_MAP.Sueno_prof,nombre:'Sueño profundo',valor:prof?prof.toFixed(2):null, unidad:'h',   tipo:'diario'},
@@ -1178,6 +1153,7 @@ async function loadFileById(fileId,fecha,fileName,apiKey){
   document.getElementById('last-update').textContent=new Date().toLocaleString('es-ES');
   renderKPIs();renderProgressBars();renderMetrics();
 }
+
 // Navegación
 function show(id) {
   if(id==='datos'){
@@ -1198,7 +1174,7 @@ function show(id) {
 // ── INIT ──
 // Mostrar timestamp en hora local del navegador
 (function(){
-  const buildUTC = '2026-05-09T22:47:20Z';
+  const buildUTC = '2026-05-09T22:59:13Z';
   const d = new Date(buildUTC);
   const ts = document.getElementById('build-ts');
   if(ts) ts.textContent = 'v' + d.toLocaleString('es-ES', {
