@@ -602,7 +602,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 //  CONFIGURACIÓN — edita estas dos líneas con tus datos
 // ════════════════════════════════════════════════════════════════════
 const DRIVE_FOLDER_ID = '1-EVHafsuevOe1iT471zk5lgYNRQKx--8';
-const DRIVE_API_KEY   = 'AIzaSyCyHn7P0N1DGOSSZFhy4-0ug7ziXKnUMeA';
+const DRIVE_API_KEY   = localStorage.getItem('drive_api_key') || '';
 const COL_MAP = {
   FC_reposo:  'Frecuencia Cardiaca en Reposo (count/min)',
   Sueno:      'An\u00e1lisis del Sue\u00f1o [Central] (hr)',
@@ -1190,7 +1190,20 @@ renderSteps('steps-fase5', STEPS_FASE5);
 document.getElementById('last-update').textContent = new Date().toLocaleDateString('es-ES');
 
 // Cargar desde Sheets (si está configurado)
-loadFromDrive();
+// Cargar API key desde localStorage o pedir al usuario
+(function() {
+  let key = localStorage.getItem('drive_api_key');
+  if (!key) {
+    key = prompt(
+      'Introduce tu Google API Key para cargar los datos de Drive:\n' +
+      '(Se guardará solo en este navegador, nunca en el código)'
+    );
+    if (key && key.trim()) {
+      localStorage.setItem('drive_api_key', key.trim());
+    }
+  }
+  loadFromDrive();
+})();
 </script>
 
 <!-- Panel detalle KPI -->
