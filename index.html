@@ -602,10 +602,23 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
 <script>
 // ════════════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN — edita estas dos líneas con tus datos
+//  CONFIGURACIÓN — ID de la carpeta "Plan Centenario" en Google Drive
 // ════════════════════════════════════════════════════════════════════
-const SHEETS_ID   = 'TU_SHEETS_ID_AQUI';        // ← reemplazar
-const SHEETS_NAME = 'Dashboard';                  // ← nombre de la hoja
+const DRIVE_FOLDER_ID = '1-EVHafsuevOe1iT471zk5lgYNRQKx--8';
+const DRIVE_API_KEY   = 'AIzaSyCyHn7P0N1DGOSSZFhy4-0ug7ziXKnUMeA';
+
+// Nombres exactos de columnas en los archivos de Health Auto Export
+const COL_MAP = {
+  'FC_reposo':    'Frecuencia Cardiaca en Reposo (count/min)',
+  'Sueno':        'Análisis del Sueño [Central] (hr)',
+  'Sueno_prof':   'Análisis del Sueño [Profundo] (hr)',
+  'Sueno_REM':    'Análisis del Sueño [REM] (hr)',
+  'Peso':         'Peso (kg)',
+  'Grasa':        'Porcentaje de grasa corporal (%)',
+  'Musculo':      'Masa Corporal Magra (kg)',
+  'IMC':          'Índice de Masa Corporal (count)',
+  'Pasos':        'Conteo de Pasos (count)',
+};
 
 // ════════════════════════════════════════════════════════════════════
 //  DATOS ESTÁTICOS (se actualizan manualmente hasta que
@@ -1037,40 +1050,153 @@ function renderSteps(containerId, steps) {
     </div>`).join('');
 }
 
-// Intentar cargar desde Google Sheets
-async function loadFromSheets() {
-  if (SHEETS_ID === 'TU_SHEETS_ID_AQUI') {
-    document.getElementById('status-badge').textContent = 'Datos locales (Sheets no configurado)';
-    document.getElementById('status-badge').className = 'status-loading';
-    return;
+// Construir fecha de hoy en formato del archivo: HealthMetrics-YYYY-MM-DD
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+// Parsear CSV respetando campos entre comillas
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; continue; }
+      if (line[i] === ',' && !inQ) { cols.push(cur); cur = ''; }
+      else cur += line[i];
+    }
+    cols.push(cur);
+    rows.push(cols);
   }
+  return rows;
+}
+
+// Buscar valor de una columna en todas las filas, devolver el primero no vacío
+function findVal(rows, headers, colName) {
+  const idx = headers.findIndex(h => h.trim() === colName);
+  if (idx === -1) return null;
+  for (let i = 1; i < rows.length; i++) {
+    const v = rows[i][idx]?.trim();
+    if (v && v !== '0' && v !== '') return parseFloat(v);
+  }
+  return null;
+}
+
+// Sumar todos los valores de una columna (para pasos acumulados en el día)
+function sumVal(rows, headers, colName) {
+  const idx = headers.findIndex(h => h.trim() === colName);
+  if (idx === -1) return null;
+  let total = 0, found = false;
+  for (let i = 1; i < rows.length; i++) {
+    const v = rows[i][idx]?.trim();
+    if (v && v !== '') { total += parseFloat(v)||0; found = true; }
+  }
+  return found ? total : null;
+}
+
+async function loadFromDrive() {
+  const badge = document.getElementById('status-badge');
+  badge.textContent = 'Cargando datos...';
+  badge.className = 'status-loading';
+
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEETS_ID}/export?format=csv&sheet=${SHEETS_NAME}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('No se pudo cargar');
-    const csv = await res.text();
-    const rows = csv.split('\n').map(r=>r.split(','));
-    // Actualizar METRICAS con datos frescos de Sheets
-    rows.slice(1).forEach(row => {
-      if (!row[0]) return;
-      const param = row[0].trim();
-      const val   = row[1]?.trim();
-      const fecha = row[3]?.trim();
-      const m = METRICAS.find(x=>x.param.includes(param) || param.includes(x.param.split(' ')[0]));
-      if (m && val) {
-        m.val = val;
-        if (fecha) m.fuente = 'Sheets · ' + fecha;
+    // 1. Buscar el archivo de hoy en la carpeta de Drive
+    const fecha = todayStr();
+    const fileName = 'HealthMetrics-' + fecha;
+    const listUrl = 'https://www.googleapis.com/drive/v3/files'
+      + '?q=' + encodeURIComponent("'" + DRIVE_FOLDER_ID + "' in parents and name contains '" + fileName + "' and trashed=false")
+      + '&fields=files(id,name)'
+      + '&key=' + DRIVE_API_KEY;
+
+    const listRes = await fetch(listUrl);
+    if (!listRes.ok) throw new Error('Error listando Drive: ' + listRes.status);
+    const listData = await listRes.json();
+
+    if (!listData.files || listData.files.length === 0) {
+      // No hay archivo de hoy — intentar con ayer
+      const ayer = new Date();
+      ayer.setDate(ayer.getDate() - 1);
+      const ayerStr = ayer.getFullYear() + '-'
+        + String(ayer.getMonth()+1).padStart(2,'0') + '-'
+        + String(ayer.getDate()).padStart(2,'0');
+      const fileNameAyer = 'HealthMetrics-' + ayerStr;
+      const listUrl2 = 'https://www.googleapis.com/drive/v3/files'
+        + '?q=' + encodeURIComponent("'" + DRIVE_FOLDER_ID + "' in parents and name contains '" + fileNameAyer + "' and trashed=false")
+        + '&fields=files(id,name)'
+        + '&key=' + DRIVE_API_KEY;
+      const listRes2 = await fetch(listUrl2);
+      const listData2 = await listRes2.json();
+      if (!listData2.files || listData2.files.length === 0) {
+        badge.textContent = 'Sin datos recientes en Drive';
+        badge.className = 'status-loading';
+        return;
       }
-    });
-    document.getElementById('status-badge').textContent = 'Datos actualizados ✓';
-    document.getElementById('status-badge').className = 'status-ok';
-    document.getElementById('last-update').textContent = new Date().toLocaleString('es-ES');
-    // Re-renderizar con datos frescos
-    renderKPIs(); renderProgressBars(); renderMetrics();
+      await loadFileById(listData2.files[0].id, ayerStr);
+      return;
+    }
+
+    // Cargar el archivo encontrado
+    await loadFileById(listData.files[0].id, fecha);
+
   } catch(e) {
-    document.getElementById('status-badge').textContent = 'Usando datos locales';
-    document.getElementById('status-badge').className = 'status-loading';
+    console.error('Drive error:', e);
+    badge.textContent = 'Datos del informe (may-2026)';
+    badge.className = 'status-loading';
   }
+}
+
+async function loadFileById(fileId, fecha) {
+  const badge = document.getElementById('status-badge');
+  // Exportar el Google Sheet como CSV
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/' + fileId + '/export?format=csv';
+  const res = await fetch(csvUrl);
+  if (!res.ok) throw new Error('Error descargando CSV: ' + res.status);
+  const text = await res.text();
+  const rows = parseCSV(text);
+  if (rows.length < 2) throw new Error('Archivo vacío');
+  const headers = rows[0];
+
+  // Extraer valores usando los nombres exactos de columna del archivo
+  const fc    = findVal(rows, headers, COL_MAP.FC_reposo);
+  const sueno = findVal(rows, headers, COL_MAP.Sueno);
+  const prof  = findVal(rows, headers, COL_MAP.Sueno_prof);
+  const rem   = findVal(rows, headers, COL_MAP.Sueno_REM);
+  const peso  = findVal(rows, headers, COL_MAP.Peso);
+  const grasa = findVal(rows, headers, COL_MAP.Grasa);
+  const musc  = findVal(rows, headers, COL_MAP.Musculo);
+  const pasos = sumVal(rows, headers, COL_MAP.Pasos);
+
+  // Actualizar array METRICAS con valores reales
+  function setMetrica(paramFragment, val, decimals) {
+    if (val === null) return;
+    const m = METRICAS.find(x => x.param.toLowerCase().includes(paramFragment.toLowerCase()));
+    if (m) { m.val = val.toFixed(decimals); m.fuente = 'Health Auto Export · ' + fecha; }
+  }
+  setMetrica('FC reposo',   fc,    0);
+  setMetrica('Sueño (h',    sueno, 2);
+  setMetrica('Grasa corp',  grasa, 1);
+  setMetrica('Masa musc',   musc,  1);
+  setMetrica('Peso (kg',    peso,  1);
+
+  // Actualizar KPIs del header
+  KPIS_RESUMEN.forEach(k => {
+    if (k.label === 'FC reposo' && fc)    k.val = fc.toFixed(0);
+    if (k.label === 'Sueño'    && sueno)  k.val = sueno.toFixed(2) + 'h';
+  });
+
+  badge.textContent = 'Datos actualizados · ' + fecha + ' ✓';
+  badge.className = 'status-ok';
+  document.getElementById('last-update').textContent = new Date().toLocaleString('es-ES');
+  renderKPIs();
+  renderProgressBars();
+  renderMetrics();
 }
 
 // Navegación
@@ -1095,8 +1221,8 @@ renderSteps('steps-fase4', STEPS_FASE4);
 renderSteps('steps-fase5', STEPS_FASE5);
 document.getElementById('last-update').textContent = new Date().toLocaleDateString('es-ES');
 
-// Cargar desde Sheets (si está configurado)
-loadFromSheets();
+// Cargar desde Google Drive
+loadFromDrive();
 </script>
 </body>
 </html>
