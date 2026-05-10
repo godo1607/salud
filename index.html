@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:30</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:37</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -193,6 +193,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <nav>
   <button class="ntab active" onclick="show('resumen')">Resumen</button>
   <button class="ntab" onclick="show('hitos')">Hitos 2026</button>
+  <button class="ntab" onclick="show('alertas')">Alertas</button>
   <button class="ntab" onclick="show('metricas')">Métricas</button>
   <button class="ntab" onclick="show('nutricion')">Nutrición</button>
   <button class="ntab" onclick="show('decadas')">Plan décadas</button>
@@ -301,16 +302,24 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   </div>
 </div>
 
-<div class="sec">Alertas activas</div>
-<div id="alertas-container">
-  <div class="ab ab-red"><strong>LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. Pedir cita cardióloga.</div>
-  <div class="ab ab-red"><strong>Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir B6 al Acfol.</div>
-  <div class="ab ab-amber"><strong>Vitamina D insuficiente</strong> — 23.7 ng/mL. Cambiar a D3 2.000–4.000 UI/día.</div>
-  <div class="ab ab-amber"><strong>Déficit de proteína</strong> — 86 g/día. Objetivo: 120–150 g/día.</div>
-  <div class="ab ab-amber"><strong>Déficit de fibra</strong> — 9 g/día. Objetivo: ≥25 g/día.</div>
-  <div class="ab ab-amber"><strong>Eco renal pendiente</strong> — Quiste Bosniak II. Próxima eco: may-jun 2026.</div>
 </div>
 
+<!-- ══ ALERTAS ════════════════════════════════════════════════════ -->
+<div id="pane-alertas" class="pane">
+  <div class="sec">Urgente — acción inmediata</div>
+  <div class="ab ab-red"><strong>LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. Pedir cita Dra. Merino esta semana. +1.5–2.5 años EV.</div>
+  <div class="ab ab-red"><strong>Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir B6 25 mg/día al Acfol. Repetir analítica ago-sep 2026.</div>
+
+  <div class="sec" style="margin-top:16px">Importante — corregir próximas semanas</div>
+  <div class="ab ab-amber"><strong>Vitamina D insuficiente</strong> — 23.7 ng/mL (objetivo ≥40). Cambiar calcifediol 1 cáp/mes por D3 2.000–4.000 UI/día. Sin receta.</div>
+  <div class="ab ab-amber"><strong>Déficit de proteína</strong> — 86 g/día vs objetivo 120–150 g/día. Añadir 1–2 tomas proteína de suero + huevos + legumbres.</div>
+  <div class="ab ab-amber"><strong>Déficit de fibra</strong> — 9 g/día vs objetivo ≥25 g/día. Añadir semillas chía, legumbres, pan integral.</div>
+  <div class="ab ab-amber"><strong>Eco renal pendiente</strong> — Quiste Bosniak II (33×31 mm). Último control nov-2025. Próxima eco: may-jun 2026. Pedir cita Dra. Carretero.</div>
+
+  <div class="sec" style="margin-top:16px">Seguimiento — medio plazo</div>
+  <div class="ab ab-blue"><strong>HDL bajo</strong> — 44 mg/dL (objetivo ≥52). Mejorar con HIIT + reducir alcohol + estatina cuando se retome.</div>
+  <div class="ab ab-blue"><strong>Fuerza estructurada</strong> — Iniciar 2×/semana: sentadilla, peso muerto, press vertical, remo con carga. +1–1.5 años EV.</div>
+  <div class="ab ab-blue"><strong>Analítica de control</strong> — Mes 2: lipídico + vit D + homocisteína + CK (si nueva estatina) + folato.</div>
 </div>
 
 <!-- ══ HITOS ════════════════════════════════════════════════════════ -->
@@ -1203,7 +1212,7 @@ function interpolarObj(puntos, anio) {
 }
 const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
 function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWEyC18F1aFKx9PU_rnNu1wFdA5VaEeaysavGz3CoM_KqfqaQTL7KvKXlg6oAHAXRH/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyE4MEcuyECsPnQj9ztSbZTBDoxXLORbgFt-aDs2Y55bsrffqgBZ6zsaPR9NlaIaMtP/exec';
 const ALTURA_M = 1.80;
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
@@ -1322,7 +1331,10 @@ async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    const res=await fetch(SCRIPT_URL);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const res = await fetch(SCRIPT_URL, {signal: controller.signal});
+    clearTimeout(timeout);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
@@ -1359,9 +1371,9 @@ async function loadFromDrive(){
     // Meta para pestaña datos
     const fechas=rows.map(r=>String(r['fecha']||'').slice(0,10)).filter(f=>f.length===10).sort();
     DATA_META={
-      totalRows:rows.length,
-      lastFecha:fechas[fechas.length-1]||'—',
-      firstFecha:fechas[0]||'—'
+      totalRows: data.totalRows || rows.length,
+      lastFecha: fechas[fechas.length-1]||'—',
+      firstFecha: fechas[0]||'—'
     };
 
     const loadTime=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
