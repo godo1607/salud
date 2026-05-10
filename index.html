@@ -1086,7 +1086,7 @@ async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    const res=await fetch('https://script.google.com/macros/s/AKfycbz7Y2zRmyUs0aQc0RV8kzW0538qF-wpKgKwHm68e3BOWLfjlW3CcxnddAHKF4Oz3xPP/exec');
+    const res=await fetch('https://script.google.com/macros/s/AKfycbyXNTU2InoXFZmMxICtyOk6Uff3_1E2lt6LGDGf3tmkHvEKmELJJcqIihdfzFwYlk6e/exec');
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
@@ -1145,7 +1145,7 @@ function show(id) {
 // ── INIT ──
 // Mostrar timestamp en hora local del navegador
 (function(){
-  const buildUTC = '2026-05-10T10:15:00Z';
+  const buildUTC = '2026-05-10T11:40:00Z';
   const d = new Date(buildUTC);
   const ts = document.getElementById('build-ts');
   if(ts) ts.textContent = 'v' + d.toLocaleString('es-ES', {
