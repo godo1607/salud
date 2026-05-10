@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:56</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 00:09</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -304,15 +304,24 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
 <div class="r-sec" style="margin-top:16px">Performance global 2026</div>
 <div class="card" style="padding:16px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-    <div>
-      <span style="font-size:36px;font-weight:800;color:#1E293B" id="score-val">—</span>
-      <span style="font-size:14px;color:#94A3B8;margin-left:4px">/ 10</span>
-      <div style="font-size:11px;color:#64748B;margin-top:2px">Puntuación ponderada · objetivos 2026</div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;margin-bottom:16px">
+    <div style="text-align:center">
+      <div style="font-size:52px;font-weight:500;line-height:1" id="score-val">—</div>
+      <div style="font-size:14px;color:#94A3B8">/ 10</div>
+      <div style="font-size:11px;color:#64748B;margin-top:4px">puntuación<br>ponderada</div>
     </div>
-    <div style="display:flex;gap:6px;align-items:flex-end" id="score-monthly">
+    <div>
+      <div style="font-size:11px;color:#64748B;margin-bottom:8px">Evolución mensual 2026</div>
+      <div style="display:flex;align-items:flex-end;gap:5px;height:60px" id="score-monthly"></div>
     </div>
   </div>
+  <hr style="border:none;border-top:0.5px solid #E2E8F0;margin:0 0 14px">
+  <div style="font-size:11px;color:#64748B;margin-bottom:10px">Pesos por impacto en longevidad</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="score-weights"></div>
+</div>
+
+<div class="card" style="padding:16px;margin-top:8px">
+  <div style="font-size:11px;color:#64748B;margin-bottom:8px">Radar de indicadores vs objetivo 2026</div>
   <div style="position:relative;height:280px;max-width:420px;margin:0 auto">
     <canvas id="radar-chart"></canvas>
   </div>
@@ -1462,19 +1471,58 @@ function renderScore() {
   // Evolución mensual
   const monthly = calcMonthlyScores();
   const container = document.getElementById('score-monthly');
-  if (!container) return;
-  const maxScore = Math.max(...monthly.map(m => m.score || 0), 10);
-  container.innerHTML = monthly.map((m,i) => {
-    if (m.score === null) return '';
-    const h = Math.round((m.score / maxScore) * 50);
-    const color = m.score >= 7 ? '#15803D' : m.score >= 5 ? '#D97706' : '#DC2626';
-    const isCurrent = i === monthly.length - 1;
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-      <span style="font-size:9px;font-weight:${isCurrent?'700':'400'};color:${isCurrent?color:'#94A3B8'}">${m.score.toFixed(1)}</span>
-      <div style="width:18px;height:${h}px;background:${isCurrent?color:'#CBD5E1'};border-radius:2px 2px 0 0;min-height:4px"></div>
-      <span style="font-size:9px;color:#94A3B8">${m.label}</span>
-    </div>`;
-  }).join('');
+  if (container) {
+    const maxH = 50;
+    const maxScore = Math.max(...monthly.map(m => m.score || 0), 10);
+    container.innerHTML = monthly.map((m,i) => {
+      if (m.score === null) return '';
+      const h = Math.max(4, Math.round((m.score / maxScore) * maxH));
+      const color = m.score >= 7 ? '#15803D' : m.score >= 5 ? '#D97706' : '#DC2626';
+      const isCurrent = i === monthly.length - 1;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+        <span style="font-size:9px;font-weight:${isCurrent?'700':'400'};color:${isCurrent?color:'#94A3B8'}">${m.score.toFixed(1)}</span>
+        <div style="width:100%;height:${h}px;background:${isCurrent?color:'#CBD5E1'};border-radius:2px 2px 0 0"></div>
+        <span style="font-size:9px;color:${isCurrent?'#1E293B':'#94A3B8'};font-weight:${isCurrent?'500':'400'}">${m.label}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Tabla de pesos con colores de cumplimiento
+  const weightsContainer = document.getElementById('score-weights');
+  if (weightsContainer) {
+    const anio = new Date().getFullYear();
+    const weightOrder = [
+      {key:'ldl',label:'LDL'},
+      {key:'vo2',label:'VO₂max'},
+      {key:'fc',label:'FC reposo'},
+      {key:'sueno',label:'Sueño'},
+      {key:'hba1c',label:'HbA1c'},
+      {key:'ta',label:'TA sistólica'},
+      {key:'grasa',label:'Grasa corporal'},
+      {key:'musculo',label:'Masa muscular'},
+      {key:'hdl',label:'HDL'},
+      {key:'vitd',label:'Vitamina D'},
+      {key:'hcy',label:'Homocisteína'},
+      {key:'pasos',label:'Pasos'},
+    ];
+    weightsContainer.innerHTML = weightOrder.map(({key,label}) => {
+      const pct = PESOS[key] * 100;
+      const stats = calcStats(key);
+      let val = stats.last;
+      if (key === 'vo2' && !val && LAST_VO2.val) val = LAST_VO2.val;
+      const cum = calcCumplimiento(key, val);
+      const color = cum === null ? '#CBD5E1' : cum >= 100 ? '#15803D' : cum >= 85 ? '#D97706' : '#DC2626';
+      const barW = Math.round((pct / 15) * 100); // 15% = max
+      return `<div style="display:flex;align-items:center;gap:6px">
+        <div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <span style="font-size:11px;color:#475569;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>
+        <div style="flex:2;height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden">
+          <div style="width:${barW}%;height:100%;background:${color};border-radius:3px"></div>
+        </div>
+        <span style="font-size:10px;color:#94A3B8;min-width:26px;text-align:right">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
 }
 
 let radarInst = null;
