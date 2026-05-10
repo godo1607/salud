@@ -183,11 +183,10 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v2026-05-09T22:59:13Z</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:30</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
-    <div class="last-update">Actualización: <span id="last-update">—</span></div>
   </div>
 </header>
 
@@ -587,30 +586,86 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
 <!-- ══ CONFIGURACIÓN ════════════════════════════════════════════════ -->
 <div id="pane-datos" class="pane">
-  <div class="sec">Archivo activo</div>
-  <div class="card" id="log-source">
-    <p style="color:#94A3B8;font-size:12px">Se rellena automáticamente al cargar datos de Drive.</p>
-  </div>
-  <div class="sec" style="margin-top:16px">Valores extraídos del CSV</div>
-  <div class="card" id="log-values">
-    <p style="color:#94A3B8;font-size:12px;padding:8px 0">Esperando datos...</p>
-  </div>
-  <div class="sec" style="margin-top:16px">Notas metodológicas</div>
-  <div class="card">
-    <div style="font-size:11.5px;color:#475569;line-height:1.9">
-      <strong style="color:#1E293B">Actualización:</strong> automática cada mañana a las 07:00 (Health Auto Export).<br>
-      <strong style="color:#1E293B">Datos diarios:</strong> FC reposo · peso · grasa · músculo · sueño — valor puntual.<br>
-      <strong style="color:#1E293B">Datos acumulados:</strong> pasos — suma de todas las horas del día.<br>
-      <strong style="color:#1E293B">VO₂max:</strong> solo en Garmin Connect — actualización manual.<br>
-      <strong style="color:#1E293B">Analíticas</strong> (LDL, HDL, vit D...): actualización manual semestral.
+
+<style>
+.datos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0}
+@media(max-width:600px){.datos-grid{grid-template-columns:1fr}}
+.datos-stat{background:#F8FAFC;border-radius:8px;padding:10px 14px}
+.datos-stat-lbl{font-size:10px;color:#94A3B8;margin:0 0 3px;text-transform:uppercase;letter-spacing:.04em}
+.datos-stat-val{font-size:14px;font-weight:700;color:#1E293B;margin:0}
+.cobertura-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid #F1F5F9;font-size:11px}
+.cobertura-row:last-child{border-bottom:none}
+.cobertura-ind{color:#475569;font-weight:500}
+.cobertura-range{color:#94A3B8}
+.cobertura-count{color:#2563EB;font-weight:600;min-width:60px;text-align:right}
+.manual-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:600px){.manual-form{grid-template-columns:1fr}}
+.manual-field{background:#F8FAFC;border-radius:8px;padding:10px 12px}
+.manual-field label{font-size:10px;color:#94A3B8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.manual-field input{width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 8px;
+  font-size:13px;font-weight:600;color:#1E293B;background:#fff}
+.manual-field .manual-fecha{font-size:10px;color:#94A3B8;margin-top:3px}
+.btn-guardar{background:#1E3A5F;color:#fff;border:none;border-radius:8px;
+  padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;width:100%}
+.btn-guardar:hover{background:#2563EB}
+.ultimo-dia-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.ultimo-dia-tbl th{font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;
+  text-align:left;padding:5px 8px;border-bottom:1px solid #E2E8F0}
+.ultimo-dia-tbl td{padding:6px 8px;border-bottom:1px solid #F1F5F9;color:#475569}
+.ultimo-dia-tbl td:first-child{font-weight:500;color:#1E293B}
+.ultimo-dia-tbl td:last-child{text-align:right;font-weight:700;color:#1E293B}
+</style>
+
+<div class="sec">Estado de la conexión</div>
+<div class="card">
+  <div class="datos-grid">
+    <div class="datos-stat">
+      <p class="datos-stat-lbl">Último dato</p>
+      <p class="datos-stat-val" id="d-last-fecha">—</p>
+    </div>
+    <div class="datos-stat">
+      <p class="datos-stat-lbl">Registros en Sheet</p>
+      <p class="datos-stat-val" id="d-total-rows">—</p>
+    </div>
+    <div class="datos-stat">
+      <p class="datos-stat-lbl">Primer registro</p>
+      <p class="datos-stat-val" id="d-first-fecha">—</p>
+    </div>
+    <div class="datos-stat">
+      <p class="datos-stat-lbl">Cargado a las</p>
+      <p class="datos-stat-val" id="d-load-time">—</p>
     </div>
   </div>
-  <div class="sec" style="margin-top:16px">Conexión a Google Drive</div>
-  <div class="card">
-    <p style="font-size:11.5px;color:#475569;margin-bottom:0">
-      Los datos se cargan automáticamente vía Google Apps Script. No se necesita API key.
-    </p>
-  </div>
+</div>
+
+<div class="sec" style="margin-top:16px">Último día cargado</div>
+<div class="card">
+  <table class="ultimo-dia-tbl">
+    <thead><tr>
+      <th>Indicador</th><th>Fuente</th><th>Valor</th>
+    </tr></thead>
+    <tbody id="d-ultimo-dia">
+      <tr><td colspan="3" style="color:#94A3B8;text-align:center;padding:16px">Cargando...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="sec" style="margin-top:16px">Cobertura histórica por indicador</div>
+<div class="card" id="d-cobertura">
+  <p style="color:#94A3B8;font-size:12px">Cargando...</p>
+</div>
+
+<div class="sec" style="margin-top:16px">Actualizar indicadores manuales</div>
+<div class="card">
+  <p style="font-size:11px;color:#64748B;margin-bottom:12px">
+    Introduce los valores de tus últimas analíticas. Se guardan en el navegador.
+  </p>
+  <div class="manual-form" id="manual-form-fields"></div>
+  <button class="btn-guardar" onclick="guardarManuales()">Guardar valores</button>
+  <p id="manual-save-status" style="font-size:11px;color:#15803D;margin-top:8px;display:none">✓ Guardado correctamente</p>
+</div>
+
 </div>
 </main>
 
@@ -1148,96 +1203,475 @@ function interpolarObj(puntos, anio) {
 }
 const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
 function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
-const INDICADORES={daily:[{key:'fc',label:'FC en reposo',unit:'bpm',col:'Frecuencia Cardiaca en Reposo (count/min)',agg:'first',decimals:0,perc:'Top 15%',percTarget:'Objetivo: top 10% → 5%'},{key:'sueno',label:'Sueño',unit:'h',col:'Análisis del Sueño [Central] (hr)',agg:'first',decimals:2,perc:'Top 25%',percTarget:'Objetivo: mantener top 15%'},{key:'peso',label:'Peso',unit:'kg',col:'Peso (kg)',agg:'first',decimals:1,perc:'Top 38%',percTarget:'Objetivo: mantener rango'},{key:'grasa',label:'Grasa corporal',unit:'%',col:'Porcentaje de grasa corporal (%)',agg:'first',decimals:1,perc:'Top 30%',percTarget:'Objetivo: top 20%'},{key:'musculo',label:'Masa muscular',unit:'kg',col:'Masa Corporal Magra (kg)',agg:'first',decimals:1,perc:'Top 20%',percTarget:'Objetivo: mantener top 20%'},{key:'pasos',label:'Pasos',unit:'pasos',col:'Conteo de Pasos (count)',agg:'sum',decimals:0,perc:'Media',percTarget:'Objetivo: top 25%'}],spot:[{key:'vo2',label:'VO₂max',unit:'ml/kg/min',col:'VO2 Máx (ml/(kg·min))',agg:'first',decimals:1,perc:'Top 10%',percTarget:'Objetivo: mantener top 10%'},{key:'ldl',label:'LDL',unit:'mg/dL',col:null,manual:true,decimals:0,perc:'Media poblacional',percTarget:'Urgente — objetivo <70'},{key:'hdl',label:'HDL',unit:'mg/dL',col:null,manual:true,decimals:0,perc:'Por debajo media',percTarget:'Objetivo: top 40%'},{key:'hba1c',label:'HbA1c',unit:'%',col:null,manual:true,decimals:1,perc:'Top 20%',percTarget:'Objetivo: mantener top 20%'},{key:'ta',label:'TA sistólica',unit:'mmHg',col:null,manual:true,decimals:0,perc:'Top 15%',percTarget:'Objetivo: mantener top 15%'},{key:'vitd',label:'Vitamina D',unit:'ng/mL',col:null,manual:true,decimals:1,perc:'Déficit crónico',percTarget:'Objetivo: ≥40 ng/mL en 2031'},{key:'hcy',label:'Homocisteína',unit:'µmol/L',col:null,manual:true,decimals:1,perc:'Elevada',percTarget:'Urgente — repetir analítica'}]};
-const MANUAL_VALS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},ta:{val:121,fecha:'may-2026'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
-let HIST={};
-function getColIdx(headers,colName){return headers.findIndex(h=>h.trim()===colName.trim());}
-function extractDayVal(rows,colName,agg){if(!rows||rows.length<2)return null;const headers=rows[0];const idx=getColIdx(headers,colName);if(idx<0)return null;const vals=rows.slice(1).map(r=>parseFloat(r[idx])).filter(v=>!isNaN(v)&&v>0);if(vals.length===0)return null;if(agg==='sum')return vals.reduce((a,b)=>a+b,0);return vals[0];}
-// ── Carga Google Drive ────────────────────────────────────────────
-// Mapa de clave corta → key del indicador
-const COL_KEY_MAP = {
-  'fc':'fc', 'sueno':'sueno', 'peso':'peso', 'grasa':'grasa',
-  'musculo':'musculo', 'pasos':'pasos', 'vo2':'vo2'
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWEyC18F1aFKx9PU_rnNu1wFdA5VaEeaysavGz3CoM_KqfqaQTL7KvKXlg6oAHAXRH/exec';
+const ALTURA_M = 1.80;
+
+// ── OBJETIVOS ANUALES ─────────────────────────────────────────────
+function interpolarObj(puntos,anio){const años=Object.keys(puntos).map(Number).sort((a,b)=>a-b);if(anio<=años[0])return puntos[años[0]];if(anio>=años[años.length-1])return puntos[años[años.length-1]];for(let i=0;i<años.length-1;i++){const a0=años[i],a1=años[i+1];if(anio>=a0&&anio<=a1){const t=(anio-a0)/(a1-a0);return Math.round((puntos[a0]+t*(puntos[a1]-puntos[a0]))*100)/100;}}return null;}
+const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},sueno_prof:{dir:'higher',u:'h',pts:{2026:1.0,2027:1.1,2031:1.2,2041:1.1,2051:1.0,2061:0.9,2076:0.8}},sueno_rem:{dir:'higher',u:'h',pts:{2026:0.9,2027:1.0,2031:1.1,2041:1.0,2051:0.9,2061:0.8,2076:0.7}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
+function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
+
+// ── INDICADORES ───────────────────────────────────────────────────
+const INDICADORES={
+  daily:[
+    {key:'fc',     label:'FC en reposo',   unit:'bpm',  decimals:0, perc:'Top 15%', percObj:{2027:'Top 10%',2032:'Top 5%'}},
+    {key:'sueno',  label:'Sueño',          unit:'h',    decimals:2, perc:'Top 25%', percObj:{2027:'Top 15%'}, subkeys:['sueno_prof','sueno_rem'], sublabels:['Profundo','REM']},
+    {key:'peso',   label:'Peso',           unit:'kg',   decimals:1, perc:'IMC', percObj:{}},
+    {key:'grasa',  label:'Grasa corporal', unit:'%',    decimals:1, perc:'Top 30%', percObj:{2027:'Top 20%'}},
+    {key:'musculo',label:'Masa muscular',  unit:'kg',   decimals:1, perc:'Top 20%', percObj:{2031:'Top 15%'}},
+    {key:'pasos',  label:'Pasos',          unit:'pasos',decimals:0, perc:'Media',   percObj:{2027:'Top 25%'}},
+  ],
+  spot:[
+    {key:'vo2',  label:'VO₂max',       unit:'ml/kg/min',decimals:1, perc:'Top 10%', percObj:{2031:'Top 10%'}},
+    {key:'ldl',  label:'LDL',          unit:'mg/dL',    decimals:0, perc:'Media poblacional', percObj:{2031:'Top 30%'}, manual:true, historia:[{fecha:'jul-16',val:174},{fecha:'jun-18',val:168},{fecha:'jun-19',val:172},{fecha:'dic-21',val:171},{fecha:'feb-23',val:213},{fecha:'ago-23',val:127},{fecha:'ene-24',val:129},{fecha:'feb-25',val:98},{fecha:'dic-25',val:135},{fecha:'feb-26',val:132}]},
+    {key:'hdl',  label:'HDL',          unit:'mg/dL',    decimals:0, perc:'Por debajo media',  percObj:{2031:'Media'},   manual:true, historia:[{fecha:'jul-16',val:51},{fecha:'jun-18',val:44},{fecha:'jun-19',val:52},{fecha:'dic-21',val:50},{fecha:'feb-23',val:54},{fecha:'ago-23',val:56},{fecha:'ene-24',val:55},{fecha:'feb-25',val:52},{fecha:'dic-25',val:45},{fecha:'feb-26',val:44}]},
+    {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
+    {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:true, historia:[{fecha:'ene-24',val:121},{fecha:'may-26',val:121}]},
+    {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ene-24',val:24.3},{fecha:'ene-24',val:23.7}]},
+    {key:'hcy',  label:'Homocisteína', unit:'µmol/L',   decimals:1, perc:'Elevada',           percObj:{2027:'<15'},     manual:true, historia:[{fecha:'ago-23',val:25.9}]},
+  ]
 };
 
+// ── VALORES MANUALES (con persistencia localStorage) ──────────────
+const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},ta:{val:121,fecha:'may-2026'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
+let MANUAL_VALS = {};
+function loadManuales(){
+  try{const s=localStorage.getItem('pc_manuales');if(s)MANUAL_VALS=JSON.parse(s);else MANUAL_VALS={...MANUAL_DEFAULTS};}
+  catch(e){MANUAL_VALS={...MANUAL_DEFAULTS};}
+}
+function saveManuales(){try{localStorage.setItem('pc_manuales',JSON.stringify(MANUAL_VALS));}catch(e){}}
+function guardarManuales(){
+  INDICADORES.spot.filter(i=>i.manual).forEach(ind=>{
+    const inp=document.getElementById('manual-inp-'+ind.key);
+    const fi=document.getElementById('manual-fecha-'+ind.key);
+    if(inp&&inp.value){
+      const v=parseFloat(inp.value);
+      if(!isNaN(v)){MANUAL_VALS[ind.key]={val:v,fecha:fi?fi.value:new Date().toLocaleDateString('es-ES')};}
+    }
+  });
+  saveManuales();
+  Object.keys(MANUAL_VALS).forEach(k=>{HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];});
+  renderResumen();
+  const st=document.getElementById('manual-save-status');
+  if(st){st.style.display='block';setTimeout(()=>st.style.display='none',3000);}
+}
+function renderManualForm(){
+  const container=document.getElementById('manual-form-fields');
+  if(!container)return;
+  container.innerHTML=INDICADORES.spot.filter(i=>i.manual).map(ind=>{
+    const mv=MANUAL_VALS[ind.key]||MANUAL_DEFAULTS[ind.key];
+    return`<div class="manual-field">
+      <label>${ind.label} (${ind.unit})</label>
+      <input id="manual-inp-${ind.key}" type="number" step="0.1" value="${mv?mv.val:''}" placeholder="—">
+      <input id="manual-fecha-${ind.key}" type="text" value="${mv?mv.fecha:''}" placeholder="ej: jun-2026" style="font-size:10px;color:#94A3B8;border:none;background:none;width:100%;padding:2px 0;margin-top:2px">
+    </div>`;
+  }).join('');
+}
+
+// ── DATOS HISTÓRICOS ──────────────────────────────────────────────
+let HIST={};
+let HIST_ALL={}; // para VO2max (histórico completo)
+let LAST_VO2={val:null,fecha:null};
+let DATA_META={totalRows:0,lastFecha:'—',firstFecha:'—'};
+
+function calcStats(key){
+  const hist=HIST[key];
+  if(!hist||hist.length===0)return{last:null,avg7:null,avg30:null,avgYear:null,series15:[]};
+  const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const last=sorted[0].val;
+  const avg=arr=>arr.length?Math.round(arr.reduce((s,x)=>s+x.val,0)/arr.length*100)/100:null;
+  const now=new Date();
+  const yearStart=now.getFullYear()+'-01-01';
+  const d7=new Date(now);d7.setDate(d7.getDate()-7);
+  const d30=new Date(now);d30.setDate(d30.getDate()-30);
+  const fmt=d=>d.toISOString().slice(0,10);
+  const avg7=avg(sorted.filter(x=>x.fecha>=fmt(d7)));
+  const avg30=avg(sorted.filter(x=>x.fecha>=fmt(d30)));
+  const avgYear=avg(sorted.filter(x=>x.fecha>=yearStart));
+  const series15=sorted.slice(0,15).reverse();
+  return{last,avg7,avg30,avgYear,series15};
+}
+
+function statusColor(key,val){
+  if(val===null)return'gray';
+  const o=OBJ_PUNTOS[key];if(!o)return'gray';
+  const obj=getObj(key,new Date().getFullYear());if(obj===null)return'gray';
+  const ratio=o.dir==='lower'?obj/val:val/obj;
+  if(ratio>=1)return'green';if(ratio>=0.88)return'amber';return'red';
+}
+
+function trendIcon(key,hist){
+  const o=OBJ_PUNTOS[key];
+  if(!o||!hist||hist.length<7)return{icon:'→ estable',cls:'r-trend-flat'};
+  const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const recent=sorted.slice(0,7).map(x=>x.val);
+  const older=sorted.slice(7,14).map(x=>x.val);
+  if(older.length===0)return{icon:'→ estable',cls:'r-trend-flat'};
+  const avgR=recent.reduce((s,v)=>s+v,0)/recent.length;
+  const avgO=older.reduce((s,v)=>s+v,0)/older.length;
+  const diff=avgR-avgO;
+  const improving=o.dir==='lower'?diff<0:diff>0;
+  const absDiff=Math.abs(diff).toFixed(1);
+  if(Math.abs(diff)<0.5)return{icon:'→ estable',cls:'r-trend-flat'};
+  if(improving)return{icon:(o.dir==='lower'?'↓':'↑')+' '+absDiff+' vs 7d',cls:'r-trend-good'};
+  return{icon:(o.dir==='lower'?'↑':'↓')+' '+absDiff+' vs 7d',cls:'r-trend-bad'};
+}
+
+// ── LOAD FROM DRIVE ───────────────────────────────────────────────
 async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    const res=await fetch('https://script.google.com/macros/s/AKfycbxp7PW4KC8AWdxyhXYQl62GQlouCpQU65PRILbYDKnPfQwT30ZcRVq4lPWUxMOZTPQY/exec');
+    const res=await fetch(SCRIPT_URL);
     if(!res.ok)throw new Error('HTTP '+res.status);
-    const rows=await res.json();
-    if(!Array.isArray(rows))throw new Error(rows.error||'Respuesta inesperada');
-    if(rows.length===0)throw new Error('Sin datos en la Sheet maestra');
+    const data=await res.json();
+    if(data.error)throw new Error(data.error);
+    const rows=data.rows;
+    if(!Array.isArray(rows)||rows.length===0)throw new Error('Sin datos');
 
     HIST={};
-    [...INDICADORES.daily,...INDICADORES.spot].forEach(ind=>{HIST[ind.key]=[];});
+    const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2'];
+    allKeys.forEach(k=>{HIST[k]=[];});
 
     rows.forEach(r=>{
-      // fecha puede ser string YYYY-MM-DD o Date serializado
-      let fecha = r['fecha'] || r['Fecha'] || '';
-      if(fecha instanceof Date) {
-        fecha = fecha.toISOString().slice(0,10);
-      } else {
-        fecha = String(fecha).slice(0,10);
-      }
-      if(!fecha || fecha.length < 10) return;
-
-      Object.keys(COL_KEY_MAP).forEach(colKey=>{
-        const indKey = COL_KEY_MAP[colKey];
-        const raw = r[colKey];
-        const val = parseFloat(raw);
-        if(!isNaN(val) && val > 0) {
-          HIST[indKey].push({fecha, val});
-        }
+      let fecha=String(r['fecha']||'').slice(0,10);
+      if(!fecha||fecha.length<10)return;
+      allKeys.forEach(k=>{
+        const raw=r[k];
+        const val=parseFloat(raw);
+        if(!isNaN(val)&&val>0)HIST[k].push({fecha,val});
       });
     });
 
-    Object.keys(HIST).forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
-    Object.keys(MANUAL_VALS).forEach(k=>{HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];});
+    allKeys.forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
 
-    const lastFecha = rows[0] ? String(rows[0]['fecha']||'').slice(0,10) : '—';
-    badge.textContent='Actualizado · '+lastFecha+' ✓';badge.className='status-ok';
-    const el_lu=document.getElementById('last-update');
-    if(el_lu)el_lu.textContent=new Date().toLocaleString('es-ES');
-    renderResumen();renderMetrics();
+    // VO2max: usar último valor del histórico completo
+    if(data.lastVo2&&data.lastVo2>0){
+      LAST_VO2={val:data.lastVo2,fecha:data.lastVo2Fecha||'—'};
+      HIST['vo2']=[{fecha:data.lastVo2Fecha||'2026-01-01',val:data.lastVo2}];
+    }
+
+    // Manuales
+    Object.keys(MANUAL_VALS).forEach(k=>{
+      HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];
+    });
+
+    // Meta para pestaña datos
+    const fechas=rows.map(r=>String(r['fecha']||'').slice(0,10)).filter(f=>f.length===10).sort();
+    DATA_META={
+      totalRows:rows.length,
+      lastFecha:fechas[fechas.length-1]||'—',
+      firstFecha:fechas[0]||'—'
+    };
+
+    const loadTime=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    badge.textContent='Datos al '+DATA_META.lastFecha+' · cargado '+loadTime;
+    badge.className='status-ok';
+
+    renderResumen();
+    renderMetrics();
+    renderDatosPane();
+
   }catch(e){
     console.error(e);
     badge.textContent='Error: '+e.message;badge.className='status-error';
   }
 }
-function calcStats(key){const hist=HIST[key];if(!hist||hist.length===0)return{last:null,avg7:null,avg30:null,avgYear:null,series15:[]};const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));const last=sorted[0].val;const avg=arr=>arr.length?Math.round(arr.reduce((s,x)=>s+x.val,0)/arr.length*100)/100:null;const now=new Date();const yearStart=now.getFullYear()+'-01-01';const d7=new Date(now);d7.setDate(d7.getDate()-7);const d30=new Date(now);d30.setDate(d30.getDate()-30);const fmt=d=>d.toISOString().slice(0,10);const avg7=avg(sorted.filter(x=>x.fecha>=fmt(d7)));const avg30=avg(sorted.filter(x=>x.fecha>=fmt(d30)));const avgYear=avg(sorted.filter(x=>x.fecha>=yearStart));const series15=sorted.slice(0,15).reverse();return{last,avg7,avg30,avgYear,series15};}
-function statusColor(key,val){if(val===null)return'gray';const o=OBJ_PUNTOS[key];if(!o)return'gray';const obj=getObj(key,new Date().getFullYear());if(obj===null)return'gray';const ratio=o.dir==='lower'?obj/val:val/obj;if(ratio>=1)return'green';if(ratio>=0.9)return'amber';return'red';}
-function trendIcon(key,hist){const o=OBJ_PUNTOS[key];if(!o||!hist||hist.length<7)return{icon:'—',cls:'r-trend-flat'};const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));const recent=sorted.slice(0,7).map(x=>x.val);const older=sorted.slice(7,14).map(x=>x.val);if(older.length===0)return{icon:'—',cls:'r-trend-flat'};const avgR=recent.reduce((s,v)=>s+v,0)/recent.length;const avgO=older.reduce((s,v)=>s+v,0)/older.length;const diff=avgR-avgO;const improving=o.dir==='lower'?diff<0:diff>0;const absDiff=Math.abs(diff).toFixed(1);if(Math.abs(diff)<0.5)return{icon:'→ estable',cls:'r-trend-flat'};if(improving)return{icon:(o.dir==='lower'?'↓':'↑')+' '+absDiff+' vs 7d',cls:'r-trend-good'};return{icon:(o.dir==='lower'?'↑':'↓')+' '+absDiff+' vs 7d',cls:'r-trend-bad'};}
+
+// ── RENDER RESUMEN ────────────────────────────────────────────────
 let rSelectedKey=null,rChartInst=null;
-function renderResumen(){renderRGrid('r-daily-grid',INDICADORES.daily);renderRGrid('r-spot-grid',INDICADORES.spot);}
-function renderRGrid(gridId,inds){const grid=document.getElementById(gridId);if(!grid)return;grid.innerHTML=inds.map(ind=>{const stats=calcStats(ind.key);const val=stats.last;const sc=statusColor(ind.key,val);const dotCls=sc==='green'?'r-dot-green':sc==='amber'?'r-dot-amber':sc==='red'?'r-dot-red':'r-dot-gray';const tr=trendIcon(ind.key,HIST[ind.key]);const displayVal=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';const staleLbl=ind.manual&&MANUAL_VALS[ind.key]?`<span class="r-stale">${MANUAL_VALS[ind.key].fecha}</span>`:'';return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')"><p class="r-card-name">${ind.label}${staleLbl}</p><p class="r-card-val">${displayVal} <span class="r-card-unit">${ind.unit}</span></p><div class="r-card-footer"><span class="r-trend ${tr.cls}">${tr.icon}</span><span class="r-dot ${dotCls}"></span></div></div>`;}).join('');}
-function rSelectCard(key){document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));const panel=document.getElementById('r-detail-panel');if(rSelectedKey===key){panel.classList.remove('r-detail-visible');rSelectedKey=null;return;}const el=document.getElementById('rcard-'+key);if(el)el.classList.add('r-selected');rSelectedKey=key;const allInds=[...INDICADORES.daily,...INDICADORES.spot];const ind=allInds.find(x=>x.key===key);if(!ind)return;const stats=calcStats(key);const o=OBJ_PUNTOS[key];const anio=new Date().getFullYear();const obj=getObj(key,anio);document.getElementById('r-det-title').textContent=ind.label;document.getElementById('r-det-sub').textContent=ind.manual?`Analítica ${MANUAL_VALS[key]?.fecha||''} · actualización manual`:'Health Auto Export · automático';const fmt=(v,d)=>v!==null?(d===0?Math.round(v):v.toFixed(d))+' '+ind.unit:'—';const lbl1=ind.manual?'Último valor':'Ayer';document.getElementById('r-lbl-v1').textContent=lbl1;document.getElementById('r-val-v1').textContent=fmt(stats.last,ind.decimals);document.getElementById('r-val-v2').textContent=ind.manual?'—':fmt(stats.avg7,ind.decimals);document.getElementById('r-val-v3').textContent=ind.manual?'—':fmt(stats.avg30,ind.decimals);document.getElementById('r-val-v4').textContent=ind.manual?'—':fmt(stats.avgYear,ind.decimals);const objBox=document.getElementById('r-obj-box');if(stats.last!==null&&obj!==null){const ok=o.dir==='lower'?stats.last<=obj:stats.last>=obj;const sign=o.dir==='lower'?'≤':'≥';if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}}else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}document.getElementById('r-chart-year').textContent=anio;document.getElementById('r-perc-badge').textContent=ind.perc;document.getElementById('r-perc-target').textContent=ind.percTarget;rRenderChart(key,ind,obj,stats.series15);panel.classList.add('r-detail-visible');panel.scrollIntoView({behavior:'smooth',block:'nearest'});}
-function rCloseDetail(){document.getElementById('r-detail-panel').classList.remove('r-detail-visible');document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));rSelectedKey=null;}
-function rRenderChart(key,ind,objVal,series){if(rChartInst){rChartInst.destroy();rChartInst=null;}const canvas=document.getElementById('r-trend-canvas');if(!canvas)return;if(!series||series.length===0){canvas.style.display='none';return;}canvas.style.display='block';const ctx=canvas.getContext('2d');const o=OBJ_PUNTOS[key];const labels=series.map(x=>{const p=x.fecha.split('-');return p[2]+'/'+p[1];});const vals=series.map(x=>x.val);const barColors=vals.map(v=>{if(objVal===null)return'#93C5FD';return(o.dir==='lower'?v<=objVal:v>=objVal)?'#15803D':'#DC2626';});const objLinePlugin={id:'objLine',afterDraw(chart){if(objVal===null)return;const{ctx:c,chartArea,scales}=chart;if(!chartArea)return;const y=scales.y.getPixelForValue(objVal);c.save();c.beginPath();c.setLineDash([4,3]);c.strokeStyle='#D97706';c.lineWidth=1.5;c.moveTo(chartArea.left,y);c.lineTo(chartArea.right,y);c.stroke();c.restore();}};const minV=Math.min(...vals,objVal!==null?objVal:Infinity);const maxV=Math.max(...vals,objVal!==null?objVal:0);const pad=(maxV-minV)*0.3||2;rChartInst=new Chart(ctx,{type:'bar',plugins:[objLinePlugin],data:{labels,datasets:[{data:vals,backgroundColor:barColors,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{ticks:{font:{size:9},maxRotation:0},grid:{display:false},border:{display:false}},y:{display:false,min:minV-pad,max:maxV+pad+1}},animation:{onComplete(anim){const chart=anim.chart;const{ctx:c,chartArea,scales}=chart;if(!chartArea)return;c.save();c.font='600 9px -apple-system,sans-serif';c.textAlign='center';c.textBaseline='bottom';const meta=chart.getDatasetMeta(0);meta.data.forEach((bar,i)=>{const v=vals[i];const ok=objVal===null?true:(o.dir==='lower'?v<=objVal:v>=objVal);c.fillStyle=ok?'#15803D':'#DC2626';const disp=ind.decimals===0?Math.round(v):v.toFixed(ind.decimals);c.fillText(disp,bar.x,bar.y-2);});c.restore();}}}});}
 
-
-// Navegación
-function show(id) {
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('pane-'+id).classList.add('active');
-  event.target.classList.add('active');
+function renderResumen(){
+  renderRGrid('r-daily-grid',INDICADORES.daily);
+  renderRGrid('r-spot-grid',INDICADORES.spot);
 }
 
-// Timestamp de compilación fijo
+function valColor(key,val){
+  const sc=statusColor(key,val);
+  return sc==='green'?'#15803D':sc==='amber'?'#B45309':'#DC2626';
+}
+
+function renderRGrid(gridId,inds){
+  const grid=document.getElementById(gridId);if(!grid)return;
+  grid.innerHTML=inds.map(ind=>{
+    let stats=calcStats(ind.key);
+    let val=stats.last;
+    // VO2max: usar LAST_VO2 si no hay en año en curso
+    if(ind.key==='vo2'&&(val===null)&&LAST_VO2.val){val=LAST_VO2.val;}
+    const color=valColor(ind.key,val);
+    const tr=trendIcon(ind.key,HIST[ind.key]);
+    let displayVal,footerRight='';
+
+    if(ind.key==='pasos'&&val!==null){
+      displayVal=`<span style="color:${color}">${Math.round(val).toLocaleString('es-ES')}</span>`;
+      const pct=Math.min(100,Math.round(val/10000*100));
+      footerRight=`<span style="font-size:10px;color:${color};font-weight:600">${pct}% de 10k</span>`;
+    } else if(ind.key==='peso'&&val!==null){
+      const imc=val/(ALTURA_M*ALTURA_M);
+      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
+      footerRight=`<span style="font-size:10px;color:#64748B">IMC ${imc.toFixed(1)}</span>`;
+    } else if(ind.key==='sueno'&&val!==null){
+      displayVal=`<span style="color:${color}">${val.toFixed(2)}</span>`;
+    } else if(ind.key==='ta'&&MANUAL_VALS['ta']){
+      displayVal=`<span style="color:${color}">${MANUAL_VALS['ta'].val}</span>`;
+      footerRight=`<span style="font-size:10px;color:#94A3B8">${MANUAL_VALS['ta'].fecha}</span>`;
+    } else {
+      const dv=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';
+      displayVal=`<span style="color:${val!==null?color:'#94A3B8'}">${dv}</span>`;
+      if(ind.manual&&MANUAL_VALS[ind.key])footerRight=`<span style="font-size:10px;color:#94A3B8">${MANUAL_VALS[ind.key].fecha}</span>`;
+    }
+
+    return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')">
+      <p class="r-card-name">${ind.label}</p>
+      <p class="r-card-val">${displayVal} <span class="r-card-unit">${ind.unit}</span></p>
+      <div class="r-card-footer">
+        <span class="r-trend ${tr.cls}">${tr.icon}</span>
+        ${footerRight}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function rSelectCard(key){
+  document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));
+  const panel=document.getElementById('r-detail-panel');
+  if(rSelectedKey===key){panel.classList.remove('r-detail-visible');rSelectedKey=null;return;}
+  const el=document.getElementById('rcard-'+key);if(el)el.classList.add('r-selected');
+  rSelectedKey=key;
+
+  const allInds=[...INDICADORES.daily,...INDICADORES.spot];
+  const ind=allInds.find(x=>x.key===key);if(!ind)return;
+
+  const anio=new Date().getFullYear();
+  const obj=getObj(key,anio);
+  const o=OBJ_PUNTOS[key];
+
+  document.getElementById('r-det-title').textContent=ind.label;
+  document.getElementById('r-det-sub').textContent=ind.manual
+    ?`Analítica · ${MANUAL_VALS[key]?.fecha||'—'} · actualización manual`
+    :'Health Auto Export · automático';
+
+  if(ind.manual){
+    // Panel para indicadores puntuales
+    renderSpotDetail(ind,anio,obj,o);
+  } else {
+    // Panel para indicadores diarios
+    renderDailyDetail(ind,anio,obj,o);
+  }
+
+  // Percentil
+  const percBadge=document.getElementById('r-perc-badge');
+  const percTarget=document.getElementById('r-perc-target');
+  if(percBadge)percBadge.textContent=ind.perc;
+  if(percTarget){
+    const targets=Object.entries(ind.percObj||{}).map(([y,v])=>`${y}: ${v}`).join(' · ');
+    percTarget.textContent=targets||'—';
+  }
+
+  panel.classList.add('r-detail-visible');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderDailyDetail(ind,anio,obj,o){
+  const stats=calcStats(ind.key);
+  const fmt=(v,d)=>v!==null?(d===0?Math.round(v):v.toFixed(d))+' '+ind.unit:'—';
+
+  document.getElementById('r-lbl-v1').textContent='Ayer';
+  document.getElementById('r-val-v1').textContent=fmt(stats.last,ind.decimals);
+  document.getElementById('r-val-v2').textContent=fmt(stats.avg7,ind.decimals);
+  document.getElementById('r-val-v3').textContent=fmt(stats.avg30,ind.decimals);
+  document.getElementById('r-val-v4').textContent=fmt(stats.avgYear,ind.decimals);
+
+  // Para peso mostrar IMC
+  if(ind.key==='peso'&&stats.last){
+    const imc=(stats.last/(ALTURA_M*ALTURA_M)).toFixed(1);
+    document.getElementById('r-val-v1').textContent=stats.last.toFixed(1)+' kg · IMC '+imc;
+  }
+
+  // Objetivo
+  const objBox=document.getElementById('r-obj-box');
+  if(stats.last!==null&&obj!==null){
+    const ok=o.dir==='lower'?stats.last<=obj:stats.last>=obj;
+    const sign=o.dir==='lower'?'≤':'≥';
+    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}
+    else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}
+  }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
+
+  document.getElementById('r-chart-year').textContent=anio;
+
+  // Gráfico principal
+  rRenderChart(ind.key,ind,obj,stats.series15,'r-trend-canvas');
+
+  // Si tiene subkeys (sueño → profundo + REM), mostrar sección adicional
+  const subSection=document.getElementById('r-sub-section');
+  if(ind.subkeys&&ind.subkeys.length>0){
+    if(!subSection){
+      // Crear sección
+      const perc=document.querySelector('.r-perc-row');
+      if(perc){
+        const div=document.createElement('div');
+        div.id='r-sub-section';
+        div.style.marginTop='14px';
+        perc.parentNode.insertBefore(div,perc);
+      }
+    }
+    const ss=document.getElementById('r-sub-section');
+    if(ss){
+      ss.innerHTML=ind.subkeys.map((sk,i)=>{
+        const subStats=calcStats(sk);
+        const subObj=getObj(sk,anio);
+        const subSeries=subStats.series15;
+        return`<div style="margin-bottom:12px">
+          <p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">${ind.sublabels[i]} · ayer: <span style="color:#1E293B">${subStats.last!==null?subStats.last.toFixed(2)+' h':'—'}</span> · media 7d: ${subStats.avg7!==null?subStats.avg7.toFixed(2)+' h':'—'}</p>
+          <div style="position:relative;height:80px"><canvas id="r-sub-canvas-${sk}"></canvas></div>
+        </div>`;
+      }).join('');
+      ind.subkeys.forEach((sk,i)=>{
+        const subStats=calcStats(sk);
+        const subObj=getObj(sk,anio);
+        const subInd={key:sk,label:ind.sublabels[i],unit:'h',decimals:2};
+        rRenderChart(sk,subInd,subObj,subStats.series15,'r-sub-canvas-'+sk);
+      });
+    }
+  } else {
+    const ss=document.getElementById('r-sub-section');
+    if(ss)ss.innerHTML='';
+  }
+}
+
+function renderSpotDetail(ind,anio,obj,o){
+  // Para puntuales: último valor, anterior, histórico completo
+  const historia=ind.historia||[];
+  const mv=MANUAL_VALS[ind.key];
+  const lastVal=mv?mv.val:null;
+  const prevEntry=historia.length>=2?historia[historia.length-2]:null;
+
+  document.getElementById('r-lbl-v1').textContent='Último valor';
+  document.getElementById('r-val-v1').textContent=lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  document.getElementById('r-val-v2').textContent=prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—';
+  document.getElementById('r-val-v3').textContent='—';
+  document.getElementById('r-val-v4').textContent='—';
+
+  // Labels para stats
+  document.getElementById('r-lbl-v1').textContent='Último';
+  const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');
+  if(lbl2)lbl2.textContent='Anterior';
+  const lbl3=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');
+  if(lbl3)lbl3.textContent='—';
+  const lbl4=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');
+  if(lbl4)lbl4.textContent='—';
+
+  // Objetivo
+  const objBox=document.getElementById('r-obj-box');
+  if(lastVal!==null&&obj!==null){
+    const ok=o.dir==='lower'?lastVal<=obj:lastVal>=obj;
+    const sign=o.dir==='lower'?'≤':'≥';
+    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}
+    else{const diff=Math.abs(lastVal-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(lastVal-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}
+  }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
+
+  // Gráfico histórico completo (todas las mediciones)
+  document.getElementById('r-chart-year').textContent='histórico';
+  const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
+  rRenderChartSpot(ind,obj,series,'r-trend-canvas');
+
+  const ss=document.getElementById('r-sub-section');
+  if(ss)ss.innerHTML='';
+}
+
+function rCloseDetail(){
+  document.getElementById('r-detail-panel').classList.remove('r-detail-visible');
+  document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));
+  rSelectedKey=null;
+}
+
+// ── GRÁFICOS ──────────────────────────────────────────────────────
+const chartInstances={};
+
+function rRenderChart(key,ind,objVal,series,canvasId){
+  if(chartInstances[canvasId]){chartInstances[canvasId].destroy();delete chartInstances[canvasId];}
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  if(!series||series.length===0){canvas.style.display='none';return;}
+  canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const o=OBJ_PUNTOS[key];
+  const labels=series.map(x=>{const p=x.fecha.split('-');return p[2]+'/'+p[1];});
+  const vals=series.map(x=>x.val);
+  const barColors=vals.map(v=>objVal===null?'#93C5FD':(o.dir==='lower'?v<=objVal:v>=objVal)?'#15803D':'#DC2626');
+  const minV=Math.min(...vals,objVal!==null?objVal:Infinity);
+  const maxV=Math.max(...vals,objVal!==null?objVal:0);
+  const pad=(maxV-minV)*0.3||1;
+  const objPlugin={id:'ol',afterDraw(c){if(objVal===null)return;const{ctx:cx,chartArea,scales}=c;if(!chartArea)return;const y=scales.y.getPixelForValue(objVal);cx.save();cx.beginPath();cx.setLineDash([4,3]);cx.strokeStyle='#D97706';cx.lineWidth=1.5;cx.moveTo(chartArea.left,y);cx.lineTo(chartArea.right,y);cx.stroke();cx.restore();}};
+  chartInstances[canvasId]=new Chart(ctx,{type:'bar',plugins:[objPlugin],data:{labels,datasets:[{data:vals,backgroundColor:barColors,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{ticks:{font:{size:9},maxRotation:0},grid:{display:false},border:{display:false}},y:{display:false,min:minV-pad,max:maxV+pad+1}},animation:{onComplete(anim){const ch=anim.chart;const{ctx:cx,chartArea}=ch;if(!chartArea)return;cx.save();cx.font='600 9px -apple-system,sans-serif';cx.textAlign='center';cx.textBaseline='bottom';const meta=ch.getDatasetMeta(0);meta.data.forEach((bar,i)=>{const v=vals[i];const ok=objVal===null?true:(o.dir==='lower'?v<=objVal:v>=objVal);cx.fillStyle=ok?'#15803D':'#DC2626';const disp=ind.decimals===0?Math.round(v):v.toFixed(ind.decimals);cx.fillText(disp,bar.x,bar.y-2);});cx.restore();}}}});
+}
+
+function rRenderChartSpot(ind,objVal,series,canvasId){
+  if(chartInstances[canvasId]){chartInstances[canvasId].destroy();delete chartInstances[canvasId];}
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  if(!series||series.length===0){canvas.style.display='none';return;}
+  canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const o=OBJ_PUNTOS[ind.key];
+  const labels=series.map(x=>x.fecha);
+  const vals=series.map(x=>x.val);
+  const barColors=vals.map(v=>objVal===null?'#93C5FD':(o.dir==='lower'?v<=objVal:v>=objVal)?'#15803D':'#DC2626');
+  const minV=Math.min(...vals,objVal!==null?objVal:Infinity);
+  const maxV=Math.max(...vals,objVal!==null?objVal:0);
+  const pad=(maxV-minV)*0.3||2;
+  const objPlugin={id:'ol',afterDraw(c){if(objVal===null)return;const{ctx:cx,chartArea,scales}=c;if(!chartArea)return;const y=scales.y.getPixelForValue(objVal);cx.save();cx.beginPath();cx.setLineDash([4,3]);cx.strokeStyle='#D97706';cx.lineWidth=1.5;cx.moveTo(chartArea.left,y);cx.lineTo(chartArea.right,y);cx.stroke();cx.restore();}};
+  chartInstances[canvasId]=new Chart(ctx,{type:'bar',plugins:[objPlugin],data:{labels,datasets:[{data:vals,backgroundColor:barColors,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{ticks:{font:{size:9},maxRotation:45},grid:{display:false},border:{display:false}},y:{display:false,min:minV-pad,max:maxV+pad}},animation:{onComplete(anim){const ch=anim.chart;const{ctx:cx,chartArea}=ch;if(!chartArea)return;cx.save();cx.font='600 9px -apple-system,sans-serif';cx.textAlign='center';cx.textBaseline='bottom';const meta=ch.getDatasetMeta(0);meta.data.forEach((bar,i)=>{const v=vals[i];const ok=objVal===null?true:(o.dir==='lower'?v<=objVal:v>=objVal);cx.fillStyle=ok?'#15803D':'#DC2626';const disp=ind.decimals===0?Math.round(v):v.toFixed(ind.decimals);cx.fillText(disp,bar.x,bar.y-2);});cx.restore();}}}});
+}
+
+// ── PESTAÑA DATOS ─────────────────────────────────────────────────
+function renderDatosPane(){
+  // Estado conexión
+  const dlf=document.getElementById('d-last-fecha');if(dlf)dlf.textContent=DATA_META.lastFecha;
+  const dtr=document.getElementById('d-total-rows');if(dtr)dtr.textContent=DATA_META.totalRows.toLocaleString('es-ES')+' días';
+  const dff=document.getElementById('d-first-fecha');if(dff)dff.textContent=DATA_META.firstFecha;
+  const dlt=document.getElementById('d-load-time');if(dlt)dlt.textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+
+  // Último día
+  const keys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2'];
+  const labels={fc:'FC en reposo',sueno:'Sueño total',sueno_prof:'Sueño profundo',sueno_rem:'Sueño REM',peso:'Peso',grasa:'Grasa corporal',musculo:'Masa muscular',pasos:'Pasos',vo2:'VO₂max'};
+  const units={fc:'bpm',sueno:'h',sueno_prof:'h',sueno_rem:'h',peso:'kg',grasa:'%',musculo:'kg',pasos:'pasos',vo2:'ml/kg/min'};
+  const fuentes={fc:'Garmin',sueno:'Garmin',sueno_prof:'Garmin',sueno_rem:'Garmin',peso:'Withings',grasa:'Withings',musculo:'Withings',pasos:'Apple Health',vo2:'Garmin'};
+  const tbody=document.getElementById('d-ultimo-dia');
+  if(tbody){
+    tbody.innerHTML=keys.map(k=>{
+      const hist=HIST[k];
+      const last=hist&&hist.length>0?[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0]:null;
+      const val=last?last.val:null;
+      const decimals=k==='pasos'?0:k==='fc'?0:2;
+      const display=val!==null?(decimals===0?Math.round(val).toLocaleString('es-ES'):val.toFixed(decimals))+' '+units[k]:'—';
+      return`<tr><td>${labels[k]}</td><td style="color:#94A3B8">${fuentes[k]}</td><td>${display}</td></tr>`;
+    }).join('');
+  }
+
+  // Cobertura
+  const cobDiv=document.getElementById('d-cobertura');
+  if(cobDiv){
+    cobDiv.innerHTML=keys.map(k=>{
+      const hist=HIST[k];
+      if(!hist||hist.length===0)return`<div class="cobertura-row"><span class="cobertura-ind">${labels[k]}</span><span class="cobertura-range">Sin datos</span><span class="cobertura-count">0</span></div>`;
+      const sorted=[...hist].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const first=sorted[0].fecha;
+      const last2=sorted[sorted.length-1].fecha;
+      return`<div class="cobertura-row"><span class="cobertura-ind">${labels[k]}</span><span class="cobertura-range">${first} → ${last2}</span><span class="cobertura-count">${hist.length} días</span></div>`;
+    }).join('');
+  }
+
+  renderManualForm();
+}
+
 (function(){
-  const ts = document.getElementById('build-ts');
-  if(ts) ts.textContent = 'v10/05/2026 22:18';
+  loadManuales();
+  renderHitos();
+  updateProgress();
+  renderTimeline();
+  renderMetrics();
+  loadFromDrive();
 })();
-// ── INIT ──────────────────────────────────────────────────────────
-renderHitos();
-updateProgress();
-renderTimeline();
-renderMetrics();
-const el_lu2 = document.getElementById('last-update');
-if(el_lu2) el_lu2.textContent = new Date().toLocaleDateString('es-ES');
-(function(){ loadFromDrive(); })();
+
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
