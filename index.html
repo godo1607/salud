@@ -937,10 +937,11 @@ function hitoHTML(h) {
   </div>`;
 }
 function renderHitos() {
-  document.getElementById('hitos-semana').innerHTML = HITOS.semana.map(hitoHTML).join('');
-  document.getElementById('hitos-mes').innerHTML    = HITOS.mes.map(hitoHTML).join('');
-  document.getElementById('hitos-q2').innerHTML     = HITOS.q2.map(hitoHTML).join('');
-  document.getElementById('hitos-q3').innerHTML     = HITOS.q3.map(hitoHTML).join('');
+  function s(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+  s('hitos-semana', HITOS.semana.map(hitoHTML).join(''));
+  s('hitos-mes',    HITOS.mes.map(hitoHTML).join(''));
+  s('hitos-q2',     HITOS.q2.map(hitoHTML).join(''));
+  s('hitos-q3',     HITOS.q3.map(hitoHTML).join(''));
 }
 function updateProgress() {
   const all = [...HITOS.semana,...HITOS.mes,...HITOS.q2,...HITOS.q3];
@@ -948,7 +949,8 @@ function updateProgress() {
   const done = all.filter(h=>st[h.id]==='done').length;
   const partial = all.filter(h=>st[h.id]==='partial').length;
   const pct = Math.round((done + partial*0.5)/all.length*100);
-  document.getElementById('progress-summary').innerHTML = `
+  const el_ps = document.getElementById('progress-summary');
+  if(el_ps) el_ps.innerHTML = `
     <div style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap">
       <div><div style="font-size:44px;font-weight:800;color:#2563EB">${pct}%</div>
         <div style="font-size:11px;color:#64748B;margin-top:4px">Progreso global 2026</div></div>
@@ -962,7 +964,8 @@ function updateProgress() {
 }
 
 function renderTimeline() {
-  document.getElementById('timeline-anual').innerHTML = TIMELINE_ANUAL.map(t=>`
+  const el_tl = document.getElementById('timeline-anual');
+  if(el_tl) el_tl.innerHTML = TIMELINE_ANUAL.map(t=>`
     <div class="tl-item">
       <div class="tl-dot future"></div>
       <div class="tl-year">${t.year}</div>
@@ -973,7 +976,8 @@ function renderTimeline() {
 function renderMetrics() {
   const statusLabel = {ok:'✓ Bien', warn:'→ Mejorar', alert:'⚠ Urgente'};
   const statusCol   = {ok:'#15803D', warn:'#B45309', alert:'#DC2626'};
-  document.getElementById('metrics-body').innerHTML = METRICAS.map(m=>`
+  const el_mb = document.getElementById('metrics-body');
+  if(el_mb) el_mb.innerHTML = METRICAS.map(m=>`
     <tr>
       <td>${m.param}</td>
       <td style="font-weight:700;color:${statusCol[m.estado]}">${m.val}</td>
@@ -987,7 +991,8 @@ function renderMetrics() {
   // Barras 2027
   const bar_items = METRICAS.filter(m=>['LDL (mg/dL)','HDL (mg/dL)','Vitamina D (ng/mL)',
     'Homocisteína (µmol/L)','VO₂max (ml/kg/min)','Proteína (g/kg/día)','Fibra (g/día)'].includes(m.param));
-  document.getElementById('bars-2027').innerHTML =
+  const el_b27 = document.getElementById('bars-2027');
+  if(el_b27) el_b27.innerHTML =
     '<div style="font-size:11px;color:#64748B;margin-bottom:10px">Barras: valor actual. Línea gris vertical: objetivo 2027.</div>' +
     bar_items.map(m=>{
       const num = parseFloat(m.val);
@@ -1013,7 +1018,9 @@ function renderMetrics() {
 }
 
 function renderSteps(containerId, steps) {
-  document.getElementById(containerId).innerHTML = steps.map(s=>`
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = steps.map(s=>`
     <div class="step">
       <div class="step-num">${s.n}</div>
       <div class="step-body">
@@ -1131,7 +1138,8 @@ async function processRows(rows,fecha,fileName){
     {col:COL_MAP.Pasos,     nombre:'Pasos totales', valor:pasos?Math.round(pasos):null,unidad:'pasos',tipo:'acumulado'},
   ]);
   badge.textContent='Actualizado · '+fecha+' ✓';badge.className='status-ok';
-  document.getElementById('last-update').textContent=new Date().toLocaleString('es-ES');
+  const el_lu = document.getElementById('last-update');
+  if(el_lu) el_lu.textContent=new Date().toLocaleString('es-ES');
   renderKPIs();renderProgressBars();renderMetrics();
 }
 
@@ -1146,7 +1154,7 @@ function show(id) {
 // Timestamp de compilación fijo
 (function(){
   const ts = document.getElementById('build-ts');
-  if(ts) ts.textContent = 'v10/05/2026 10:01';
+  if(ts) ts.textContent = 'v10/05/2026 10:08';
 })();
 // ── INIT ──────────────────────────────────────────────────────────
 renderKPIs();
@@ -1160,7 +1168,8 @@ renderSteps('steps-fase2', STEPS_FASE2);
 renderSteps('steps-fase3', STEPS_FASE3);
 renderSteps('steps-fase4', STEPS_FASE4);
 renderSteps('steps-fase5', STEPS_FASE5);
-document.getElementById('last-update').textContent = new Date().toLocaleDateString('es-ES');
+const el_lu2 = document.getElementById('last-update');
+if(el_lu2) el_lu2.textContent = new Date().toLocaleDateString('es-ES');
 
 // Cargar desde Sheets (si está configurado)
 (function(){
