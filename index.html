@@ -1096,6 +1096,7 @@ async function loadFromDrive(){
     // Parsear CSV directamente
     const rows=parseCSV(data.csv);
     if(rows.length<2)throw new Error('Archivo vacío');
+    badge.textContent='Script OK · '+rows.length+' filas · procesando...';
     await processRows(rows,fecha,data.fileName);
   }catch(e){
     console.error(e);
@@ -1145,7 +1146,7 @@ function show(id) {
 // Timestamp de compilación fijo
 (function(){
   const ts = document.getElementById('build-ts');
-  if(ts) ts.textContent = 'v10/05/2026 10:05';
+  if(ts) ts.textContent = 'v10/05/2026 10:01';
 })();
 // ── INIT ──────────────────────────────────────────────────────────
 renderKPIs();
