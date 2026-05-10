@@ -1086,7 +1086,7 @@ async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    const res=await fetch('https://script.google.com/macros/s/AKfycbyXNTU2InoXFZmMxICtyOk6Uff3_1E2lt6LGDGf3tmkHvEKmELJJcqIihdfzFwYlk6e/exec');
+    const res=await fetch('https://script.google.com/macros/s/AKfycbypxag6naC4S64Fdr8TNB69i39AjpM-8bjKGTPQtGRK-ToZxuJBue_TN079xZnSasp_/exec');
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
@@ -1142,15 +1142,12 @@ function show(id) {
   event.target.classList.add('active');
 }
 
-// ── INIT ──
-// Mostrar timestamp en hora local del navegador
+// Timestamp: hora local del navegador en el momento de cargar
 (function(){
-  const buildUTC = '2026-05-10T11:40:00Z';
-  const d = new Date(buildUTC);
   const ts = document.getElementById('build-ts');
-  if(ts) ts.textContent = 'v' + d.toLocaleString('es-ES', {
-    day:'2-digit',month:'2-digit',year:'numeric',
-    hour:'2-digit',minute:'2-digit'
+  if(ts) ts.textContent = 'v' + new Date().toLocaleString('es-ES', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
   });
 })();
 // ── INIT ──────────────────────────────────────────────────────────
