@@ -560,21 +560,11 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
       <strong style="color:#1E293B">Analíticas</strong> (LDL, HDL, vit D...): actualización manual semestral.
     </div>
   </div>
-  <div class="sec" style="margin-top:16px">API key de Google Drive</div>
+  <div class="sec" style="margin-top:16px">Conexión a Google Drive</div>
   <div class="card">
-    <p style="font-size:11.5px;color:#475569;margin-bottom:10px">
-      Introduce tu API key para conectar con Google Drive. Se guarda solo en este navegador.
+    <p style="font-size:11.5px;color:#475569;margin-bottom:0">
+      Los datos se cargan automáticamente vía Google Apps Script. No se necesita API key.
     </p>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input id="api-key-input" type="password" placeholder="AIzaSy..."
-        style="flex:1;padding:8px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;font-family:monospace"
-        value="">
-      <button onclick="saveAPIKey()"
-        style="background:#1E3A5F;color:#fff;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap">
-        Guardar y conectar
-      </button>
-    </div>
-    <p id="api-key-status" style="font-size:11px;color:#94A3B8;margin-top:6px"></p>
   </div>
 </div>
 </main>
@@ -1078,15 +1068,7 @@ function openDetail(label,val,unit,sub){
   document.getElementById('detail-overlay').style.display='flex';
 }
 function closeDetail(e){if(e.target.id==='detail-overlay')document.getElementById('detail-overlay').style.display='none';}
-function saveAPIKey(){
-  const input=document.getElementById('api-key-input');
-  const key=input?input.value.trim():'';
-  if(!key){const st=document.getElementById('api-key-status');if(st)st.textContent='Introduce una API key válida.';return;}
-  localStorage.setItem('drive_api_key',key);
-  const st=document.getElementById('api-key-status');
-  if(st){st.textContent='Guardada. Conectando...';st.style.color='#15803D';}
-  loadFromDrive();
-}
+
 // ── Log datos ─────────────────────────────────────────────────────
 function updateDataLog(fileName,fecha,values){
   const src=document.getElementById('log-source');
@@ -1103,7 +1085,6 @@ function updateDataLog(fileName,fecha,values){
 async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
-  const st=document.getElementById('api-key-status');
   try{
     const res=await fetch('https://script.google.com/macros/s/AKfycbz7Y2zRmyUs0aQc0RV8kzW0538qF-wpKgKwHm68e3BOWLfjlW3CcxnddAHKF4Oz3xPP/exec');
     if(!res.ok)throw new Error('HTTP '+res.status);
@@ -1119,7 +1100,6 @@ async function loadFromDrive(){
   }catch(e){
     console.error(e);
     badge.textContent='Error: '+e.message;badge.className='status-error';
-    if(st){st.textContent='Error: '+e.message;st.style.color='#DC2626';}
   }
 }
 async function processRows(rows,fecha,fileName){
@@ -1156,15 +1136,6 @@ async function processRows(rows,fecha,fileName){
 
 // Navegación
 function show(id) {
-  if(id==='datos'){
-    const inp=document.getElementById('api-key-input');
-    if(inp){
-      const k=localStorage.getItem('drive_api_key')||'';
-      inp.value=k;
-      const st=document.getElementById('api-key-status');
-      if(st)st.textContent=k?'API key guardada. Estado: '+document.getElementById('status-badge').textContent:'Sin API key configurada.';
-    }
-  }
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   document.getElementById('pane-'+id).classList.add('active');
@@ -1174,7 +1145,7 @@ function show(id) {
 // ── INIT ──
 // Mostrar timestamp en hora local del navegador
 (function(){
-  const buildUTC = '2026-05-09T22:59:13Z';
+  const buildUTC = '2026-05-10T10:15:00Z';
   const d = new Date(buildUTC);
   const ts = document.getElementById('build-ts');
   if(ts) ts.textContent = 'v' + d.toLocaleString('es-ES', {
