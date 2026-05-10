@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 00:09</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 00:23</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -304,26 +304,30 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 
 <div class="r-sec" style="margin-top:16px">Performance global 2026</div>
 <div class="card" style="padding:16px">
-  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;margin-bottom:16px">
-    <div style="text-align:center">
-      <div style="font-size:52px;font-weight:500;line-height:1" id="score-val">—</div>
-      <div style="font-size:14px;color:#94A3B8">/ 10</div>
-      <div style="font-size:11px;color:#64748B;margin-top:4px">puntuación<br>ponderada</div>
-    </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+    <!-- Radar -->
     <div>
-      <div style="font-size:11px;color:#64748B;margin-bottom:8px">Evolución mensual 2026</div>
-      <div style="display:flex;align-items:flex-end;gap:5px;height:60px" id="score-monthly"></div>
+      <div style="position:relative;height:260px">
+        <canvas id="radar-chart"></canvas>
+      </div>
     </div>
-  </div>
-  <hr style="border:none;border-top:0.5px solid #E2E8F0;margin:0 0 14px">
-  <div style="font-size:11px;color:#64748B;margin-bottom:10px">Pesos por impacto en longevidad</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="score-weights"></div>
-</div>
-
-<div class="card" style="padding:16px;margin-top:8px">
-  <div style="font-size:11px;color:#64748B;margin-bottom:8px">Radar de indicadores vs objetivo 2026</div>
-  <div style="position:relative;height:280px;max-width:420px;margin:0 auto">
-    <canvas id="radar-chart"></canvas>
+    <!-- Puntuación + evolución + tabla -->
+    <div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px">
+        <span style="font-size:48px;font-weight:500;line-height:1" id="score-val">—</span>
+        <span style="font-size:16px;color:#94A3B8">/10</span>
+      </div>
+      <div style="font-size:11px;color:#64748B;margin-bottom:10px">puntuación ponderada · <span id="score-mes">—</span></div>
+      <div style="position:relative;height:70px;margin-bottom:4px">
+        <canvas id="score-line-chart"></canvas>
+      </div>
+      <div style="font-size:10px;color:#94A3B8;text-align:center;margin-bottom:10px">evolución mensual 2026</div>
+      <div style="border-top:0.5px solid #E2E8F0;padding-top:8px;margin-bottom:6px">
+        <div style="font-size:10px;color:#94A3B8">Indicador · puntuación · peso</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px" id="score-weights">
+      </table>
+    </div>
   </div>
 </div>
 
@@ -1459,68 +1463,114 @@ function calcMonthlyScores() {
   return meses;
 }
 
+let scoreLineInst = null;
+
 function renderScore() {
   const score = calcScore();
+  const anio = new Date().getFullYear();
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const mesActual = meses[new Date().getMonth()];
+
   const scoreEl = document.getElementById('score-val');
+  const scoreMes = document.getElementById('score-mes');
   if (scoreEl) {
     scoreEl.textContent = score !== null ? score.toFixed(1) : '—';
     const color = score >= 7 ? '#15803D' : score >= 5 ? '#D97706' : '#DC2626';
     scoreEl.style.color = color;
   }
+  if (scoreMes) scoreMes.textContent = mesActual + ' ' + anio;
 
-  // Evolución mensual
+  // Gráfico de línea con valores en cada punto
   const monthly = calcMonthlyScores();
-  const container = document.getElementById('score-monthly');
-  if (container) {
-    const maxH = 50;
-    const maxScore = Math.max(...monthly.map(m => m.score || 0), 10);
-    container.innerHTML = monthly.map((m,i) => {
-      if (m.score === null) return '';
-      const h = Math.max(4, Math.round((m.score / maxScore) * maxH));
-      const color = m.score >= 7 ? '#15803D' : m.score >= 5 ? '#D97706' : '#DC2626';
-      const isCurrent = i === monthly.length - 1;
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
-        <span style="font-size:9px;font-weight:${isCurrent?'700':'400'};color:${isCurrent?color:'#94A3B8'}">${m.score.toFixed(1)}</span>
-        <div style="width:100%;height:${h}px;background:${isCurrent?color:'#CBD5E1'};border-radius:2px 2px 0 0"></div>
-        <span style="font-size:9px;color:${isCurrent?'#1E293B':'#94A3B8'};font-weight:${isCurrent?'500':'400'}">${m.label}</span>
-      </div>`;
-    }).join('');
+  const canvas = document.getElementById('score-line-chart');
+  if (canvas && monthly.length > 0) {
+    if (scoreLineInst) { scoreLineInst.destroy(); scoreLineInst = null; }
+    const ctx = canvas.getContext('2d');
+    const labels = monthly.map(m => m.label);
+    const vals = monthly.map(m => m.score);
+    const pointColors = vals.map((v,i) => i === vals.length-1 ? '#2563EB' : '#CBD5E1');
+    const pointSizes = vals.map((v,i) => i === vals.length-1 ? 5 : 3);
+
+    const datalabelsPlugin = {
+      id: 'datalabels',
+      afterDatasetsDraw(chart) {
+        const {ctx: c, data} = chart;
+        const meta = chart.getDatasetMeta(0);
+        c.save();
+        c.font = '500 9px -apple-system,sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'bottom';
+        meta.data.forEach((point, i) => {
+          const v = vals[i];
+          if (v === null) return;
+          const isCurrent = i === vals.length - 1;
+          c.fillStyle = isCurrent ? '#2563EB' : '#94A3B8';
+          c.font = isCurrent ? '700 9px -apple-system,sans-serif' : '400 9px -apple-system,sans-serif';
+          c.fillText(v.toFixed(1), point.x, point.y - 4);
+        });
+        c.restore();
+      }
+    };
+
+    scoreLineInst = new Chart(ctx, {
+      type: 'line',
+      plugins: [datalabelsPlugin],
+      data: {
+        labels,
+        datasets: [{
+          data: vals,
+          borderColor: '#2563EB',
+          borderWidth: 2,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: pointSizes,
+          tension: 0.3,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: {
+          x: { ticks: { font: { size: 9 } }, grid: { display: false }, border: { display: false } },
+          y: { display: false, min: Math.min(...vals.filter(v=>v!==null)) - 0.5, max: 10.2 }
+        }
+      }
+    });
   }
 
-  // Tabla de pesos con colores de cumplimiento
-  const weightsContainer = document.getElementById('score-weights');
-  if (weightsContainer) {
-    const anio = new Date().getFullYear();
+  // Tabla de pesos
+  const weightsEl = document.getElementById('score-weights');
+  if (weightsEl) {
     const weightOrder = [
-      {key:'ldl',label:'LDL'},
-      {key:'vo2',label:'VO₂max'},
-      {key:'fc',label:'FC reposo'},
-      {key:'sueno',label:'Sueño'},
-      {key:'hba1c',label:'HbA1c'},
-      {key:'ta',label:'TA sistólica'},
-      {key:'grasa',label:'Grasa corporal'},
-      {key:'musculo',label:'Masa muscular'},
-      {key:'hdl',label:'HDL'},
-      {key:'vitd',label:'Vitamina D'},
-      {key:'hcy',label:'Homocisteína'},
-      {key:'pasos',label:'Pasos'},
+      {key:'ldl',label:'LDL',peso:15},
+      {key:'vo2',label:'VO₂max',peso:15},
+      {key:'fc',label:'FC reposo',peso:10},
+      {key:'sueno',label:'Sueño',peso:10},
+      {key:'hba1c',label:'HbA1c',peso:10},
+      {key:'ta',label:'TA sistólica',peso:10},
+      {key:'grasa',label:'Grasa corporal',peso:8},
+      {key:'musculo',label:'Masa muscular',peso:8},
+      {key:'hdl',label:'HDL',peso:7},
+      {key:'vitd',label:'Vitamina D',peso:7},
+      {key:'hcy',label:'Homocisteína',peso:5},
+      {key:'pasos',label:'Pasos',peso:5},
     ];
-    weightsContainer.innerHTML = weightOrder.map(({key,label}) => {
-      const pct = PESOS[key] * 100;
+    weightsEl.innerHTML = weightOrder.map(({key, label, peso}) => {
       const stats = calcStats(key);
       let val = stats.last;
       if (key === 'vo2' && !val && LAST_VO2.val) val = LAST_VO2.val;
       const cum = calcCumplimiento(key, val);
+      const indScore = cum !== null ? (Math.min(100, cum) / 10).toFixed(1) : '—';
       const color = cum === null ? '#CBD5E1' : cum >= 100 ? '#15803D' : cum >= 85 ? '#D97706' : '#DC2626';
-      const barW = Math.round((pct / 15) * 100); // 15% = max
-      return `<div style="display:flex;align-items:center;gap:6px">
-        <div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>
-        <span style="font-size:11px;color:#475569;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>
-        <div style="flex:2;height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden">
-          <div style="width:${barW}%;height:100%;background:${color};border-radius:3px"></div>
-        </div>
-        <span style="font-size:10px;color:#94A3B8;min-width:26px;text-align:right">${pct}%</span>
-      </div>`;
+      return `<tr>
+        <td style="width:12px;padding:2px 4px 2px 0">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color}"></span>
+        </td>
+        <td style="padding:2px 4px;color:#475569;font-size:11px">${label}</td>
+        <td style="padding:2px 4px;text-align:right;font-weight:500;color:${color};font-size:11px">${indScore}</td>
+        <td style="padding:2px 4px;text-align:right;color:#94A3B8;font-size:10px;width:28px">${peso}%</td>
+      </tr>`;
     }).join('');
   }
 }
