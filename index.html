@@ -205,67 +205,112 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <!-- ══ RESUMEN ══════════════════════════════════════════════════════ -->
 <div id="pane-resumen" class="pane active">
 
-  <div class="sec">Estado actual — indicadores clave</div>
-  <div class="g6" id="kpi-grid">
-    <div class="loading"><div class="spinner"></div><br>Cargando desde Google Sheets...</div>
-  </div>
+<!-- Estilos específicos del Resumen -->
+<style>
+.r-sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  color:#94A3B8;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #E2E8F0}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:8px}
+@media(max-width:600px){.r-grid{grid-template-columns:repeat(2,1fr)}}
 
-  <div class="sec" style="margin-top:20px">Progreso hacia objetivos</div>
-  <div class="card" id="progress-bars">
-    <div class="loading"><div class="spinner"></div><br>Conectando...</div>
-  </div>
+.r-card{background:#fff;border:1px solid #E2E8F0;border-radius:10px;
+  padding:12px 14px;cursor:pointer;transition:all .15s;position:relative}
+.r-card:hover{border-color:#93C5FD;box-shadow:0 0 0 3px rgba(37,99,235,.07)}
+.r-card.r-selected{border:2px solid #2563EB}
+.r-card-name{font-size:10px;color:#64748B;font-weight:500;
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.r-card-val{font-size:22px;font-weight:700;color:#1E293B;line-height:1.1}
+.r-card-unit{font-size:10px;font-weight:400;color:#94A3B8}
+.r-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.r-trend{font-size:10px;display:flex;align-items:center;gap:2px}
+.r-trend-good{color:#15803D}
+.r-trend-bad{color:#DC2626}
+.r-trend-flat{color:#94A3B8}
+.r-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.r-dot-green{background:#15803D}
+.r-dot-amber{background:#D97706}
+.r-dot-red{background:#DC2626}
+.r-dot-gray{background:#CBD5E1}
 
-  <div class="sec">Estimación de esperanza de vida</div>
-  <div class="card">
-    <div style="font-size:11px;color:#64748B;margin-bottom:12px">
-      Base INE 2024 (hombre 50 años) = 83.5 años. Ajustado por biomarcadores + herencia materna (abuela 97 años).
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">Media España (hombre 50a)</div>
-      <div class="prog-track"><div class="prog-fill" style="width:72%;background:#94A3B8"></div></div>
-      <div class="prog-val" style="color:#64748B">83.5 años</div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">+ VO₂max p90+ (ya tiene)</div>
-      <div class="prog-track"><div class="prog-fill" style="width:79%;background:#15803D"></div></div>
-      <div class="prog-val ok">+3–5 años</div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">+ No fumador / TA / glucosa</div>
-      <div class="prog-track"><div class="prog-fill" style="width:83%;background:#15803D"></div></div>
-      <div class="prog-val ok">+3–4 años</div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">+ Herencia abuela materna 97a</div>
-      <div class="prog-track"><div class="prog-fill" style="width:90%;background:#0EA5E9"></div></div>
-      <div class="prog-val" style="color:#0EA5E9">+3–5 años</div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">– LDL sin controlar (pendiente)</div>
-      <div class="prog-track"><div class="prog-fill" style="width:87%;background:#DC2626"></div></div>
-      <div class="prog-val alert">–1.5 años</div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-label">+ LDL &lt;70 sostenido (objetivo)</div>
-      <div class="prog-track"><div class="prog-fill" style="width:93%;background:#15803D"></div></div>
-      <div class="prog-val ok">+2 años ★</div>
-    </div>
-    <div class="prog-row" style="margin-top:10px;padding-top:10px;border-top:1px solid #E2E8F0">
-      <div class="prog-label" style="color:#1E293B;font-weight:600">Escenario optimizado</div>
-      <div class="prog-track"><div class="prog-fill" style="width:96%;background:linear-gradient(90deg,#0F766E,#2563EB)"></div></div>
-      <div class="prog-val" style="color:#0F766E;font-size:13px;font-weight:700">95–97 años</div>
-    </div>
-  </div>
+/* Panel detalle */
+.r-detail{background:#fff;border:1px solid #E2E8F0;border-radius:10px;
+  padding:16px;margin-bottom:16px;display:none}
+.r-detail.r-detail-visible{display:block}
+.r-det-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.r-det-title{font-size:14px;font-weight:700;color:#1E293B;margin:0 0 2px}
+.r-det-sub{font-size:11px;color:#94A3B8;margin:0}
+.r-det-close{background:none;border:none;font-size:18px;cursor:pointer;
+  color:#94A3B8;padding:0;line-height:1}
+.r-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:600px){.r-stats{grid-template-columns:repeat(2,1fr)}}
+.r-stat{background:#F8FAFC;border-radius:8px;padding:10px 12px}
+.r-stat-lbl{font-size:10px;color:#94A3B8;margin:0 0 3px}
+.r-stat-val{font-size:14px;font-weight:700;color:#1E293B;margin:0}
+.r-stat-val.r-highlight{color:#2563EB}
 
-  <div class="sec">Alertas activas</div>
-  <div id="alertas-container">
-    <div class="ab ab-red"><strong>🔴 LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. <strong>Pedir cita la cardióloga esta semana.</strong> [email cardiólogo]</div>
-    <div class="ab ab-red"><strong>🔴 Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir vitamina B6 al Acfol.</div>
-    <div class="ab ab-amber"><strong>🟡 Vitamina D insuficiente</strong> — 23.7 ng/mL. Cambiar a D3 2.000–4.000 UI/día. Objetivo ≥40 ng/mL.</div>
-    <div class="ab ab-amber"><strong>🟡 Déficit de proteína</strong> — 86 g/día (CalAI). Objetivo: 120–150 g/día. Añadir 1–2 tomas proteína suero + legumbres.</div>
-    <div class="ab ab-amber"><strong>🟡 Déficit de fibra</strong> — 9 g/día (CalAI). Objetivo: ≥25 g/día. Añadir semillas chía, legumbres, pan integral.</div>
-    <div class="ab ab-amber"><strong>🟡 Eco renal pendiente</strong> — Quiste Bosniak II. Último control nov-2025. Próxima eco: may-jun 2026.</div>
+.r-obj-box{border-radius:8px;padding:10px 13px;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+.r-obj-ok{background:#F0FDF4;color:#15803D}
+.r-obj-warn{background:#FFFBEB;color:#92400E}
+.r-obj-bad{background:#FEF2F2;color:#991B1B}
+
+.r-chart-lbl{font-size:10px;color:#94A3B8;margin:0 0 8px}
+.r-chart-wrap{position:relative;height:110px;width:100%;margin-bottom:4px}
+
+.r-perc-row{display:flex;align-items:center;gap:8px;
+  padding-top:10px;margin-top:10px;border-top:1px solid #F1F5F9}
+.r-perc-lbl{font-size:11px;color:#64748B}
+.r-perc-badge{font-size:10px;font-weight:600;padding:2px 8px;
+  border-radius:20px;background:#DBEAFE;color:#1E40AF}
+.r-perc-target{font-size:10px;color:#94A3B8;margin-left:auto}
+
+.r-stale{font-size:10px;color:#D97706;background:#FFFBEB;
+  border-radius:4px;padding:2px 6px;margin-left:6px}
+</style>
+
+<div class="r-sec">Indicadores diarios</div>
+<div class="r-grid" id="r-daily-grid">
+  <div class="loading"><div class="spinner"></div></div>
+</div>
+
+<div class="r-sec">Indicadores puntuales</div>
+<div class="r-grid" id="r-spot-grid">
+  <div class="loading"><div class="spinner"></div></div>
+</div>
+
+<!-- Panel detalle (se inserta aquí dinámicamente) -->
+<div class="r-detail" id="r-detail-panel">
+  <div class="r-det-header">
+    <div>
+      <p class="r-det-title" id="r-det-title">—</p>
+      <p class="r-det-sub" id="r-det-sub">—</p>
+    </div>
+    <button class="r-det-close" onclick="rCloseDetail()" aria-label="Cerrar">✕</button>
   </div>
+  <div class="r-stats">
+    <div class="r-stat"><p class="r-stat-lbl" id="r-lbl-v1">Ayer</p><p class="r-stat-val r-highlight" id="r-val-v1">—</p></div>
+    <div class="r-stat"><p class="r-stat-lbl">Media 7d</p><p class="r-stat-val" id="r-val-v2">—</p></div>
+    <div class="r-stat"><p class="r-stat-lbl">Media 30d</p><p class="r-stat-val" id="r-val-v3">—</p></div>
+    <div class="r-stat"><p class="r-stat-lbl">Media 2026</p><p class="r-stat-val" id="r-val-v4">—</p></div>
+  </div>
+  <div class="r-obj-box" id="r-obj-box">—</div>
+  <p class="r-chart-lbl">Últimos 15 días vs objetivo <span id="r-chart-year">2026</span></p>
+  <div class="r-chart-wrap"><canvas id="r-trend-canvas"></canvas></div>
+  <div class="r-perc-row">
+    <span class="r-perc-lbl">Percentil poblacional</span>
+    <span class="r-perc-badge" id="r-perc-badge">—</span>
+    <span class="r-perc-target" id="r-perc-target">—</span>
+  </div>
+</div>
+
+<div class="sec">Alertas activas</div>
+<div id="alertas-container">
+  <div class="ab ab-red"><strong>LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. Pedir cita cardióloga.</div>
+  <div class="ab ab-red"><strong>Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir B6 al Acfol.</div>
+  <div class="ab ab-amber"><strong>Vitamina D insuficiente</strong> — 23.7 ng/mL. Cambiar a D3 2.000–4.000 UI/día.</div>
+  <div class="ab ab-amber"><strong>Déficit de proteína</strong> — 86 g/día. Objetivo: 120–150 g/día.</div>
+  <div class="ab ab-amber"><strong>Déficit de fibra</strong> — 9 g/día. Objetivo: ≥25 g/día.</div>
+  <div class="ab ab-amber"><strong>Eco renal pendiente</strong> — Quiste Bosniak II. Próxima eco: may-jun 2026.</div>
+</div>
 
 </div>
 
@@ -1088,60 +1133,89 @@ function updateDataLog(fileName,fecha,values){
   if(ve)ve.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#F8FAFC"><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Columna CSV</th><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Métrica</th><th style="text-align:right;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Valor</th><th style="text-align:center;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Tipo</th></tr></thead><tbody>'+
     values.map(v=>`<tr style="border-bottom:1px solid #F1F5F9"><td style="padding:5px 8px;color:#94A3B8;font-size:10px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.col.split('(')[0].trim()}</td><td style="padding:5px 8px;color:#475569">${v.nombre}</td><td style="padding:5px 8px;font-weight:700;color:#1E293B;text-align:right">${v.valor!==null?v.valor:'—'} ${v.unidad}</td><td style="padding:5px 8px;text-align:center"><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;${v.tipo==='diario'?'background:#DBEAFE;color:#1E40AF':'background:#D1FAE5;color:#065F46'}">${v.tipo}</span></td></tr>`).join('')+'</tbody></table>';
 }
+// ── OBJETIVOS ANUALES (interpolados 2026-2076) ────────────────────
+function interpolarObj(puntos, anio) {
+  const años = Object.keys(puntos).map(Number).sort((a,b)=>a-b);
+  if(anio<=años[0]) return puntos[años[0]];
+  if(anio>=años[años.length-1]) return puntos[años[años.length-1]];
+  for(let i=0;i<años.length-1;i++){
+    const a0=años[i],a1=años[i+1];
+    if(anio>=a0&&anio<=a1){
+      const t=(anio-a0)/(a1-a0);
+      return Math.round((puntos[a0]+t*(puntos[a1]-puntos[a0]))*100)/100;
+    }
+  }
+}
+const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
+function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
+const INDICADORES={daily:[{key:'fc',label:'FC en reposo',unit:'bpm',col:'Frecuencia Cardiaca en Reposo (count/min)',agg:'first',decimals:0,perc:'Top 15%',percTarget:'Objetivo: top 10% → 5%'},{key:'sueno',label:'Sueño',unit:'h',col:'Análisis del Sueño [Central] (hr)',agg:'first',decimals:2,perc:'Top 25%',percTarget:'Objetivo: mantener top 15%'},{key:'peso',label:'Peso',unit:'kg',col:'Peso (kg)',agg:'first',decimals:1,perc:'Top 38%',percTarget:'Objetivo: mantener rango'},{key:'grasa',label:'Grasa corporal',unit:'%',col:'Porcentaje de grasa corporal (%)',agg:'first',decimals:1,perc:'Top 30%',percTarget:'Objetivo: top 20%'},{key:'musculo',label:'Masa muscular',unit:'kg',col:'Masa Corporal Magra (kg)',agg:'first',decimals:1,perc:'Top 20%',percTarget:'Objetivo: mantener top 20%'},{key:'pasos',label:'Pasos',unit:'pasos',col:'Conteo de Pasos (count)',agg:'sum',decimals:0,perc:'Media',percTarget:'Objetivo: top 25%'}],spot:[{key:'vo2',label:'VO₂max',unit:'ml/kg/min',col:'VO2 Máx (ml/(kg·min))',agg:'first',decimals:1,perc:'Top 10%',percTarget:'Objetivo: mantener top 10%'},{key:'ldl',label:'LDL',unit:'mg/dL',col:null,manual:true,decimals:0,perc:'Media poblacional',percTarget:'Urgente — objetivo <70'},{key:'hdl',label:'HDL',unit:'mg/dL',col:null,manual:true,decimals:0,perc:'Por debajo media',percTarget:'Objetivo: top 40%'},{key:'hba1c',label:'HbA1c',unit:'%',col:null,manual:true,decimals:1,perc:'Top 20%',percTarget:'Objetivo: mantener top 20%'},{key:'ta',label:'TA sistólica',unit:'mmHg',col:null,manual:true,decimals:0,perc:'Top 15%',percTarget:'Objetivo: mantener top 15%'},{key:'vitd',label:'Vitamina D',unit:'ng/mL',col:null,manual:true,decimals:1,perc:'Déficit crónico',percTarget:'Objetivo: ≥40 ng/mL en 2031'},{key:'hcy',label:'Homocisteína',unit:'µmol/L',col:null,manual:true,decimals:1,perc:'Elevada',percTarget:'Urgente — repetir analítica'}]};
+const MANUAL_VALS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},ta:{val:121,fecha:'may-2026'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
+let HIST={};
+function getColIdx(headers,colName){return headers.findIndex(h=>h.trim()===colName.trim());}
+function extractDayVal(rows,colName,agg){if(!rows||rows.length<2)return null;const headers=rows[0];const idx=getColIdx(headers,colName);if(idx<0)return null;const vals=rows.slice(1).map(r=>parseFloat(r[idx])).filter(v=>!isNaN(v)&&v>0);if(vals.length===0)return null;if(agg==='sum')return vals.reduce((a,b)=>a+b,0);return vals[0];}
 // ── Carga Google Drive ────────────────────────────────────────────
+// Mapa de clave corta → key del indicador
+const COL_KEY_MAP = {
+  'fc':'fc', 'sueno':'sueno', 'peso':'peso', 'grasa':'grasa',
+  'musculo':'musculo', 'pasos':'pasos', 'vo2':'vo2'
+};
+
 async function loadFromDrive(){
   const badge=document.getElementById('status-badge');
   badge.textContent='Cargando...';badge.className='status-loading';
   try{
-    const res=await fetch('https://script.google.com/macros/s/AKfycbxZFx-Qq_-ORSf-AxojRepkBHejFJQUTTA0gFihNTu3Z_D_-LBxXO66MmmwNeFB8SXh/exec');
+    const res=await fetch('https://script.google.com/macros/s/AKfycbxp7PW4KC8AWdxyhXYQl62GQlouCpQU65PRILbYDKnPfQwT30ZcRVq4lPWUxMOZTPQY/exec');
     if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(data.error)throw new Error(data.error);
-    // Extraer fecha del nombre del archivo
-    const match=data.fileName.match(/(\d{4}-\d{2}-\d{2})/);
-    const fecha=match?match[1]:dateStr(new Date());
-    // Parsear CSV directamente
-    const rows=parseCSV(data.csv);
-    if(rows.length<2)throw new Error('Archivo vacío');
-    badge.textContent='Script OK · '+rows.length+' filas · procesando...';
-    await processRows(rows,fecha,data.fileName);
+    const rows=await res.json();
+    if(!Array.isArray(rows))throw new Error(rows.error||'Respuesta inesperada');
+    if(rows.length===0)throw new Error('Sin datos en la Sheet maestra');
+
+    HIST={};
+    [...INDICADORES.daily,...INDICADORES.spot].forEach(ind=>{HIST[ind.key]=[];});
+
+    rows.forEach(r=>{
+      // fecha puede ser string YYYY-MM-DD o Date serializado
+      let fecha = r['fecha'] || r['Fecha'] || '';
+      if(fecha instanceof Date) {
+        fecha = fecha.toISOString().slice(0,10);
+      } else {
+        fecha = String(fecha).slice(0,10);
+      }
+      if(!fecha || fecha.length < 10) return;
+
+      Object.keys(COL_KEY_MAP).forEach(colKey=>{
+        const indKey = COL_KEY_MAP[colKey];
+        const raw = r[colKey];
+        const val = parseFloat(raw);
+        if(!isNaN(val) && val > 0) {
+          HIST[indKey].push({fecha, val});
+        }
+      });
+    });
+
+    Object.keys(HIST).forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
+    Object.keys(MANUAL_VALS).forEach(k=>{HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];});
+
+    const lastFecha = rows[0] ? String(rows[0]['fecha']||'').slice(0,10) : '—';
+    badge.textContent='Actualizado · '+lastFecha+' ✓';badge.className='status-ok';
+    const el_lu=document.getElementById('last-update');
+    if(el_lu)el_lu.textContent=new Date().toLocaleString('es-ES');
+    renderResumen();renderMetrics();
   }catch(e){
     console.error(e);
     badge.textContent='Error: '+e.message;badge.className='status-error';
   }
 }
-async function processRows(rows,fecha,fileName){
-  const badge=document.getElementById('status-badge');
-  const h=rows[0];
-  const fc=findVal(rows,h,COL_MAP.FC_reposo);
-  const sueno=findVal(rows,h,COL_MAP.Sueno);
-  const prof=findVal(rows,h,COL_MAP.Sueno_prof);
-  const rem=findVal(rows,h,COL_MAP.Sueno_REM);
-  const peso=findVal(rows,h,COL_MAP.Peso);
-  const grasa=findVal(rows,h,COL_MAP.Grasa);
-  const musc=findVal(rows,h,COL_MAP.Musculo);
-  const pasos=sumVal(rows,h,COL_MAP.Pasos);
-  function setM(frag,val,dec){if(val===null)return;const m=METRICAS.find(x=>x.param.toLowerCase().includes(frag.toLowerCase()));if(m){m.val=val.toFixed(dec);m.fuente='Health Auto Export · '+fecha;}}
-  setM('FC reposo',fc,0);setM('Sueño (h',sueno,2);setM('Grasa corp',grasa,1);setM('Masa musc',musc,1);setM('Peso (kg',peso,1);
-  KPIS_RESUMEN.forEach(k=>{
-    if(k.label==='FC reposo'&&fc)k.val=fc.toFixed(0);
-    if(k.label==='Sueño'&&sueno)k.val=sueno.toFixed(2)+'h';
-  });
-  updateDataLog(fileName,fecha,[
-    {col:COL_MAP.FC_reposo, nombre:'FC en reposo',  valor:fc?fc.toFixed(0):null,    unidad:'bpm',   tipo:'diario'},
-    {col:COL_MAP.Sueno,     nombre:'Sueño total',   valor:sueno?sueno.toFixed(2):null,unidad:'h',   tipo:'diario'},
-    {col:COL_MAP.Sueno_prof,nombre:'Sueño profundo',valor:prof?prof.toFixed(2):null, unidad:'h',   tipo:'diario'},
-    {col:COL_MAP.Sueno_REM, nombre:'Sueño REM',     valor:rem?rem.toFixed(2):null,   unidad:'h',   tipo:'diario'},
-    {col:COL_MAP.Peso,      nombre:'Peso',          valor:peso?peso.toFixed(1):null, unidad:'kg',  tipo:'diario'},
-    {col:COL_MAP.Grasa,     nombre:'Grasa corporal',valor:grasa?grasa.toFixed(1):null,unidad:'%',  tipo:'diario'},
-    {col:COL_MAP.Musculo,   nombre:'Masa muscular', valor:musc?musc.toFixed(1):null, unidad:'kg',  tipo:'diario'},
-    {col:COL_MAP.Pasos,     nombre:'Pasos totales', valor:pasos?Math.round(pasos):null,unidad:'pasos',tipo:'acumulado'},
-  ]);
-  badge.textContent='Actualizado · '+fecha+' ✓';badge.className='status-ok';
-  const el_lu = document.getElementById('last-update');
-  if(el_lu) el_lu.textContent=new Date().toLocaleString('es-ES');
-  renderKPIs();renderProgressBars();renderMetrics();
-}
+function calcStats(key){const hist=HIST[key];if(!hist||hist.length===0)return{last:null,avg7:null,avg30:null,avgYear:null,series15:[]};const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));const last=sorted[0].val;const avg=arr=>arr.length?Math.round(arr.reduce((s,x)=>s+x.val,0)/arr.length*100)/100:null;const now=new Date();const yearStart=now.getFullYear()+'-01-01';const d7=new Date(now);d7.setDate(d7.getDate()-7);const d30=new Date(now);d30.setDate(d30.getDate()-30);const fmt=d=>d.toISOString().slice(0,10);const avg7=avg(sorted.filter(x=>x.fecha>=fmt(d7)));const avg30=avg(sorted.filter(x=>x.fecha>=fmt(d30)));const avgYear=avg(sorted.filter(x=>x.fecha>=yearStart));const series15=sorted.slice(0,15).reverse();return{last,avg7,avg30,avgYear,series15};}
+function statusColor(key,val){if(val===null)return'gray';const o=OBJ_PUNTOS[key];if(!o)return'gray';const obj=getObj(key,new Date().getFullYear());if(obj===null)return'gray';const ratio=o.dir==='lower'?obj/val:val/obj;if(ratio>=1)return'green';if(ratio>=0.9)return'amber';return'red';}
+function trendIcon(key,hist){const o=OBJ_PUNTOS[key];if(!o||!hist||hist.length<7)return{icon:'—',cls:'r-trend-flat'};const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));const recent=sorted.slice(0,7).map(x=>x.val);const older=sorted.slice(7,14).map(x=>x.val);if(older.length===0)return{icon:'—',cls:'r-trend-flat'};const avgR=recent.reduce((s,v)=>s+v,0)/recent.length;const avgO=older.reduce((s,v)=>s+v,0)/older.length;const diff=avgR-avgO;const improving=o.dir==='lower'?diff<0:diff>0;const absDiff=Math.abs(diff).toFixed(1);if(Math.abs(diff)<0.5)return{icon:'→ estable',cls:'r-trend-flat'};if(improving)return{icon:(o.dir==='lower'?'↓':'↑')+' '+absDiff+' vs 7d',cls:'r-trend-good'};return{icon:(o.dir==='lower'?'↑':'↓')+' '+absDiff+' vs 7d',cls:'r-trend-bad'};}
+let rSelectedKey=null,rChartInst=null;
+function renderResumen(){renderRGrid('r-daily-grid',INDICADORES.daily);renderRGrid('r-spot-grid',INDICADORES.spot);}
+function renderRGrid(gridId,inds){const grid=document.getElementById(gridId);if(!grid)return;grid.innerHTML=inds.map(ind=>{const stats=calcStats(ind.key);const val=stats.last;const sc=statusColor(ind.key,val);const dotCls=sc==='green'?'r-dot-green':sc==='amber'?'r-dot-amber':sc==='red'?'r-dot-red':'r-dot-gray';const tr=trendIcon(ind.key,HIST[ind.key]);const displayVal=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';const staleLbl=ind.manual&&MANUAL_VALS[ind.key]?`<span class="r-stale">${MANUAL_VALS[ind.key].fecha}</span>`:'';return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')"><p class="r-card-name">${ind.label}${staleLbl}</p><p class="r-card-val">${displayVal} <span class="r-card-unit">${ind.unit}</span></p><div class="r-card-footer"><span class="r-trend ${tr.cls}">${tr.icon}</span><span class="r-dot ${dotCls}"></span></div></div>`;}).join('');}
+function rSelectCard(key){document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));const panel=document.getElementById('r-detail-panel');if(rSelectedKey===key){panel.classList.remove('r-detail-visible');rSelectedKey=null;return;}const el=document.getElementById('rcard-'+key);if(el)el.classList.add('r-selected');rSelectedKey=key;const allInds=[...INDICADORES.daily,...INDICADORES.spot];const ind=allInds.find(x=>x.key===key);if(!ind)return;const stats=calcStats(key);const o=OBJ_PUNTOS[key];const anio=new Date().getFullYear();const obj=getObj(key,anio);document.getElementById('r-det-title').textContent=ind.label;document.getElementById('r-det-sub').textContent=ind.manual?`Analítica ${MANUAL_VALS[key]?.fecha||''} · actualización manual`:'Health Auto Export · automático';const fmt=(v,d)=>v!==null?(d===0?Math.round(v):v.toFixed(d))+' '+ind.unit:'—';const lbl1=ind.manual?'Último valor':'Ayer';document.getElementById('r-lbl-v1').textContent=lbl1;document.getElementById('r-val-v1').textContent=fmt(stats.last,ind.decimals);document.getElementById('r-val-v2').textContent=ind.manual?'—':fmt(stats.avg7,ind.decimals);document.getElementById('r-val-v3').textContent=ind.manual?'—':fmt(stats.avg30,ind.decimals);document.getElementById('r-val-v4').textContent=ind.manual?'—':fmt(stats.avgYear,ind.decimals);const objBox=document.getElementById('r-obj-box');if(stats.last!==null&&obj!==null){const ok=o.dir==='lower'?stats.last<=obj:stats.last>=obj;const sign=o.dir==='lower'?'≤':'≥';if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}}else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}document.getElementById('r-chart-year').textContent=anio;document.getElementById('r-perc-badge').textContent=ind.perc;document.getElementById('r-perc-target').textContent=ind.percTarget;rRenderChart(key,ind,obj,stats.series15);panel.classList.add('r-detail-visible');panel.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function rCloseDetail(){document.getElementById('r-detail-panel').classList.remove('r-detail-visible');document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));rSelectedKey=null;}
+function rRenderChart(key,ind,objVal,series){if(rChartInst){rChartInst.destroy();rChartInst=null;}const canvas=document.getElementById('r-trend-canvas');if(!canvas)return;if(!series||series.length===0){canvas.style.display='none';return;}canvas.style.display='block';const ctx=canvas.getContext('2d');const o=OBJ_PUNTOS[key];const labels=series.map(x=>{const p=x.fecha.split('-');return p[2]+'/'+p[1];});const vals=series.map(x=>x.val);const barColors=vals.map(v=>{if(objVal===null)return'#93C5FD';return(o.dir==='lower'?v<=objVal:v>=objVal)?'#15803D':'#DC2626';});const objLinePlugin={id:'objLine',afterDraw(chart){if(objVal===null)return;const{ctx:c,chartArea,scales}=chart;if(!chartArea)return;const y=scales.y.getPixelForValue(objVal);c.save();c.beginPath();c.setLineDash([4,3]);c.strokeStyle='#D97706';c.lineWidth=1.5;c.moveTo(chartArea.left,y);c.lineTo(chartArea.right,y);c.stroke();c.restore();}};const minV=Math.min(...vals,objVal!==null?objVal:Infinity);const maxV=Math.max(...vals,objVal!==null?objVal:0);const pad=(maxV-minV)*0.3||2;rChartInst=new Chart(ctx,{type:'bar',plugins:[objLinePlugin],data:{labels,datasets:[{data:vals,backgroundColor:barColors,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{ticks:{font:{size:9},maxRotation:0},grid:{display:false},border:{display:false}},y:{display:false,min:minV-pad,max:maxV+pad+1}},animation:{onComplete(anim){const chart=anim.chart;const{ctx:c,chartArea,scales}=chart;if(!chartArea)return;c.save();c.font='600 9px -apple-system,sans-serif';c.textAlign='center';c.textBaseline='bottom';const meta=chart.getDatasetMeta(0);meta.data.forEach((bar,i)=>{const v=vals[i];const ok=objVal===null?true:(o.dir==='lower'?v<=objVal:v>=objVal);c.fillStyle=ok?'#15803D':'#DC2626';const disp=ind.decimals===0?Math.round(v):v.toFixed(ind.decimals);c.fillText(disp,bar.x,bar.y-2);});c.restore();}}}});}
+
 
 // Navegación
 function show(id) {
@@ -1154,28 +1228,18 @@ function show(id) {
 // Timestamp de compilación fijo
 (function(){
   const ts = document.getElementById('build-ts');
-  if(ts) ts.textContent = 'v10/05/2026 10:08';
+  if(ts) ts.textContent = 'v10/05/2026 22:18';
 })();
 // ── INIT ──────────────────────────────────────────────────────────
-renderKPIs();
-renderProgressBars();
 renderHitos();
 updateProgress();
 renderTimeline();
 renderMetrics();
-renderSteps('steps-fase1', STEPS_FASE1);
-renderSteps('steps-fase2', STEPS_FASE2);
-renderSteps('steps-fase3', STEPS_FASE3);
-renderSteps('steps-fase4', STEPS_FASE4);
-renderSteps('steps-fase5', STEPS_FASE5);
 const el_lu2 = document.getElementById('last-update');
 if(el_lu2) el_lu2.textContent = new Date().toLocaleDateString('es-ES');
-
-// Cargar desde Sheets (si está configurado)
-(function(){
-  loadFromDrive();
-})();
+(function(){ loadFromDrive(); })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
 <!-- Panel detalle KPI -->
 <div id="detail-overlay" onclick="closeDetail(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center">
