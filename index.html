@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:37</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v10/05/2026 23:50</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -267,7 +267,14 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   border-radius:4px;padding:2px 6px;margin-left:6px}
 </style>
 
-<div class="r-sec">Indicadores diarios</div>
+<div class="r-sec">Performance global 2026</div>
+<div class="card" style="padding:16px">
+  <div style="position:relative;height:280px;max-width:400px;margin:0 auto">
+    <canvas id="radar-chart"></canvas>
+  </div>
+</div>
+
+<div class="r-sec" style="margin-top:16px">Indicadores diarios</div>
 <div class="r-grid" id="r-daily-grid">
   <div class="loading"><div class="spinner"></div></div>
 </div>
@@ -1376,11 +1383,104 @@ async function loadFromDrive(){
 }
 
 // ── RENDER RESUMEN ────────────────────────────────────────────────
-let rSelectedKey=null,rChartInst=null;
+let radarInst = null;
+function renderRadar() {
+  const canvas = document.getElementById('radar-chart');
+  if (!canvas) return;
+  if (radarInst) { radarInst.destroy(); radarInst = null; }
+
+  // Indicadores a mostrar en el radar (clave, label corto)
+  const radarKeys = [
+    {key:'fc',     label:'FC reposo'},
+    {key:'sueno',  label:'Sueño'},
+    {key:'vo2',    label:'VO₂max'},
+    {key:'grasa',  label:'Grasa'},
+    {key:'musculo',label:'Músculo'},
+    {key:'ldl',    label:'LDL'},
+    {key:'hdl',    label:'HDL'},
+    {key:'hba1c',  label:'HbA1c'},
+    {key:'vitd',   label:'Vit. D'},
+    {key:'ta',     label:'TA'},
+  ];
+
+  const anio = new Date().getFullYear();
+  const vals = radarKeys.map(({key}) => {
+    const stats = calcStats(key);
+    let val = stats.last;
+    if (key === 'vo2' && !val && LAST_VO2.val) val = LAST_VO2.val;
+    if (val === null) return 50; // sin dato → neutro
+    const obj = getObj(key, anio);
+    if (!obj) return 50;
+    const o = OBJ_PUNTOS[key];
+    // % cumplimiento: 100 = en objetivo exacto, >100 = supera objetivo
+    const pct = o.dir === 'lower'
+      ? Math.min(150, (obj / val) * 100)
+      : Math.min(150, (val / obj) * 100);
+    return Math.round(pct);
+  });
+
+  const pointColors = vals.map(v =>
+    v >= 100 ? '#15803D' : v >= 85 ? '#D97706' : '#DC2626'
+  );
+
+  radarInst = new Chart(canvas.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: radarKeys.map(x => x.label),
+      datasets: [
+        {
+          label: 'Cumplimiento objetivo 2026 (%)',
+          data: vals,
+          backgroundColor: 'rgba(37,99,235,0.12)',
+          borderColor: '#2563EB',
+          borderWidth: 2,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: 4,
+        },
+        {
+          label: 'Objetivo (100%)',
+          data: Array(radarKeys.length).fill(100),
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderColor: '#D97706',
+          borderWidth: 1,
+          borderDash: [4,3],
+          pointRadius: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 150,
+          ticks: { display: false, stepSize: 50 },
+          grid: { color: 'rgba(0,0,0,0.08)' },
+          angleLines: { color: 'rgba(0,0,0,0.08)' },
+          pointLabels: { font: { size: 11 }, color: '#475569' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (ctx.datasetIndex === 1) return 'Objetivo: 100%';
+              return `${ctx.label}: ${v}% del objetivo`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
 
 function renderResumen(){
   renderRGrid('r-daily-grid',INDICADORES.daily);
   renderRGrid('r-spot-grid',INDICADORES.spot);
+  renderRadar();
 }
 
 function valColor(key,val){
