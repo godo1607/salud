@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 08:39</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 09:44</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1226,12 +1226,12 @@ function updateDataLog(fileName,fecha,values){
   if(ve)ve.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#F8FAFC"><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Columna CSV</th><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Métrica</th><th style="text-align:right;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Valor</th><th style="text-align:center;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Tipo</th></tr></thead><tbody>'+
     values.map(v=>`<tr style="border-bottom:1px solid #F1F5F9"><td style="padding:5px 8px;color:#94A3B8;font-size:10px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.col.split('(')[0].trim()}</td><td style="padding:5px 8px;color:#475569">${v.nombre}</td><td style="padding:5px 8px;font-weight:700;color:#1E293B;text-align:right">${v.valor!==null?v.valor:'—'} ${v.unidad}</td><td style="padding:5px 8px;text-align:center"><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;${v.tipo==='diario'?'background:#DBEAFE;color:#1E40AF':'background:#D1FAE5;color:#065F46'}">${v.tipo}</span></td></tr>`).join('')+'</tbody></table>';
 }
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbZf5x2pfsWGE5NypiehhHhmth9pNM5dBzDLr-gdmZ0HY4ESEDc3iNUS9Sd0o-397a/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOKaK8hYuBaPzY4GMldcVPzqlIeVZj-rLSpInKcDE043S13HV0RmxZaRxlafpNkq0e/exec';
 const ALTURA_M = 1.80;
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
 function interpolarObj(puntos,anio){const años=Object.keys(puntos).map(Number).sort((a,b)=>a-b);if(anio<=años[0])return puntos[años[0]];if(anio>=años[años.length-1])return puntos[años[años.length-1]];for(let i=0;i<años.length-1;i++){const a0=años[i],a1=años[i+1];if(anio>=a0&&anio<=a1){const t=(anio-a0)/(a1-a0);return Math.round((puntos[a0]+t*(puntos[a1]-puntos[a0]))*100)/100;}}return null;}
-const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},sueno_prof:{dir:'higher',u:'h',pts:{2026:1.0,2027:1.1,2031:1.2,2041:1.1,2051:1.0,2061:0.9,2076:0.8}},sueno_rem:{dir:'higher',u:'h',pts:{2026:0.9,2027:1.0,2031:1.1,2041:1.0,2051:0.9,2061:0.8,2076:0.7}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
+const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},sueno_prof:{dir:'higher',u:'h',pts:{2026:1.0,2027:1.1,2031:1.2,2041:1.1,2051:1.0,2061:0.9,2076:0.8}},sueno_rem:{dir:'higher',u:'h',pts:{2026:0.9,2027:1.0,2031:1.1,2041:1.0,2051:0.9,2061:0.8,2076:0.7}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta_diast:{dir:'lower',u:'mmHg',pts:{2026:80,2027:80,2031:80,2041:85,2051:85,2061:90,2076:90}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
 function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
 
 // ── INDICADORES ───────────────────────────────────────────────────
@@ -1249,7 +1249,7 @@ const INDICADORES={
     {key:'ldl',  label:'LDL',          unit:'mg/dL',    decimals:0, perc:'Media poblacional', percObj:{2031:'Top 30%'}, manual:true, historia:[{fecha:'jul-16',val:174},{fecha:'jun-18',val:168},{fecha:'jun-19',val:172},{fecha:'dic-21',val:171},{fecha:'feb-23',val:213},{fecha:'ago-23',val:127},{fecha:'ene-24',val:129},{fecha:'feb-25',val:98},{fecha:'dic-25',val:135},{fecha:'feb-26',val:132}]},
     {key:'hdl',  label:'HDL',          unit:'mg/dL',    decimals:0, perc:'Por debajo media',  percObj:{2031:'Media'},   manual:true, historia:[{fecha:'jul-16',val:51},{fecha:'jun-18',val:44},{fecha:'jun-19',val:52},{fecha:'dic-21',val:50},{fecha:'feb-23',val:54},{fecha:'ago-23',val:56},{fecha:'ene-24',val:55},{fecha:'feb-25',val:52},{fecha:'dic-25',val:45},{fecha:'feb-26',val:44}]},
     {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
-    {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:false, subkeys:['ta_diast'], sublabels:['Diastólica']},
+    {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:false, spot:true, subkeys:['ta_diast'], sublabels:['Diastólica'], historia:[]},
     {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ene-24',val:24.3},{fecha:'ene-24',val:23.7}]},
     {key:'hcy',  label:'Homocisteína', unit:'µmol/L',   decimals:1, perc:'Elevada',           percObj:{2027:'<15'},     manual:true, historia:[{fecha:'ago-23',val:25.9}]},
   ]
@@ -1356,7 +1356,7 @@ async function loadFromDrive(){
     if(!Array.isArray(rows)||rows.length===0)throw new Error('Sin datos');
 
     HIST={};
-    const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2','ta_sist','ta_diast'];
+    const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2','ta','ta_sist','ta_diast'];
     allKeys.forEach(k=>{HIST[k]=[];});
 
     rows.forEach(r=>{
@@ -1365,7 +1365,11 @@ async function loadFromDrive(){
       allKeys.forEach(k=>{
         const raw=r[k];
         const val=parseFloat(raw);
-        if(!isNaN(val)&&val>0)HIST[k].push({fecha,val});
+        if(!isNaN(val)&&val>0){
+          // ta_sist se mapea a 'ta' para el indicador principal
+          const histKey = k==='ta_sist'?'ta':k;
+          if(HIST[histKey]) HIST[histKey].push({fecha,val});
+        }
       });    });
 
     allKeys.forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
@@ -1704,15 +1708,16 @@ function renderRGrid(gridId,inds){
     } else if(ind.key==='sueno'&&val!==null){
       displayVal=`<span style="color:${color}">${val.toFixed(2)}</span>`;
     } else if(ind.key==='ta'){
-      const statsSist=calcStats('ta_sist');
+      const statsSist=calcStats('ta');
       const statsDiast=calcStats('ta_diast');
-      const sist=statsSist.last||MANUAL_VALS['ta']?.val||null;
+      const sist=statsSist.last||null;
       const diast=statsDiast.last||null;
       const displaySist=sist?Math.round(sist):'—';
       const displayDiast=diast?Math.round(diast):'—';
       const color=valColor('ta',sist);
       displayVal=`<span style="color:${color}">${displaySist}/${displayDiast}</span>`;
-      footerRight=`<span style="font-size:10px;color:#94A3B8">${statsSist.last?'auto':'manual'}</span>`;
+      const lastFecha=statsSist.series15&&statsSist.series15.length>0?statsSist.series15[statsSist.series15.length-1].fecha.slice(0,7):'';
+      footerRight=`<span style="font-size:10px;color:#94A3B8">${lastFecha}</span>`;
     } else {
       const dv=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';
       displayVal=`<span style="color:${val!==null?color:'#94A3B8'}">${dv}</span>`;
@@ -1750,7 +1755,7 @@ function rSelectCard(key){
     ?`Analítica · ${MANUAL_VALS[key]?.fecha||'—'} · actualización manual`
     :'Health Auto Export · automático';
 
-  if(ind.manual){
+  if(ind.manual || ind.spot){
     // Panel para indicadores puntuales
     renderSpotDetail(ind,anio,obj,o);
   } else {
@@ -1820,16 +1825,21 @@ function renderDailyDetail(ind,anio,obj,o){
       ss.innerHTML=ind.subkeys.map((sk,i)=>{
         const subStats=calcStats(sk);
         const subObj=getObj(sk,anio);
-        const subSeries=subStats.series15;
+        const subO=OBJ_PUNTOS[sk];
+        const subUnit=subO?subO.u:ind.unit;
+        const subDec=subUnit==='h'?2:0;
+        const subVal=subStats.last!==null?subStats.last.toFixed(subDec)+' '+subUnit:'—';
+        const subAvg7=subStats.avg7!==null?subStats.avg7.toFixed(subDec)+' '+subUnit:'—';
         return`<div style="margin-bottom:12px">
-          <p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">${ind.sublabels[i]} · ayer: <span style="color:#1E293B">${subStats.last!==null?subStats.last.toFixed(2)+' h':'—'}</span> · media 7d: ${subStats.avg7!==null?subStats.avg7.toFixed(2)+' h':'—'}</p>
+          <p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">${ind.sublabels[i]} · ayer: <span style="color:#1E293B">${subVal}</span> · media 7d: ${subAvg7}</p>
           <div style="position:relative;height:80px"><canvas id="r-sub-canvas-${sk}"></canvas></div>
         </div>`;
       }).join('');
       ind.subkeys.forEach((sk,i)=>{
         const subStats=calcStats(sk);
         const subObj=getObj(sk,anio);
-        const subInd={key:sk,label:ind.sublabels[i],unit:'h',decimals:2};
+        const subO=OBJ_PUNTOS[sk];
+        const subInd={key:sk,label:ind.sublabels[i],unit:subO?subO.u:ind.unit,decimals:subO&&subO.u==='h'?2:0};
         rRenderChart(sk,subInd,subObj,subStats.series15,'r-sub-canvas-'+sk);
       });
     }
@@ -1841,10 +1851,21 @@ function renderDailyDetail(ind,anio,obj,o){
 
 function renderSpotDetail(ind,anio,obj,o){
   // Para puntuales: último valor, anterior, histórico completo
-  const historia=ind.historia||[];
-  const mv=MANUAL_VALS[ind.key];
-  const lastVal=mv?mv.val:null;
-  const prevEntry=historia.length>=2?historia[historia.length-2]:null;
+  // Si no es manual, usar HIST; si es manual, usar ind.historia + MANUAL_VALS
+  let historia, lastVal, prevEntry;
+  if(ind.manual){
+    historia = ind.historia||[];
+    const mv = MANUAL_VALS[ind.key];
+    lastVal = mv?mv.val:null;
+    prevEntry = historia.length>=2?historia[historia.length-2]:null;
+  } else {
+    // TA y otros no-manuales: usar HIST
+    const hist = HIST[ind.key]||[];
+    const sorted = [...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    lastVal = sorted.length>0?sorted[0].val:null;
+    prevEntry = sorted.length>1?{fecha:sorted[1].fecha,val:sorted[1].val}:null;
+    historia = [...hist].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  }
 
   document.getElementById('r-lbl-v1').textContent='Último valor';
   document.getElementById('r-val-v1').textContent=lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—';
@@ -1931,10 +1952,10 @@ function renderDatosPane(){
   const dlt=document.getElementById('d-load-time');if(dlt)dlt.textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 
   // Último día
-  const keys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2'];
-  const labels={fc:'FC en reposo',sueno:'Sueño total',sueno_prof:'Sueño profundo',sueno_rem:'Sueño REM',peso:'Peso',grasa:'Grasa corporal',musculo:'Masa muscular',pasos:'Pasos',vo2:'VO₂max'};
-  const units={fc:'bpm',sueno:'h',sueno_prof:'h',sueno_rem:'h',peso:'kg',grasa:'%',musculo:'kg',pasos:'pasos',vo2:'ml/kg/min'};
-  const fuentes={fc:'Garmin',sueno:'Garmin',sueno_prof:'Garmin',sueno_rem:'Garmin',peso:'Withings',grasa:'Withings',musculo:'Withings',pasos:'Apple Health',vo2:'Garmin'};
+  const keys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2','ta','ta_diast'];
+  const labels={fc:'FC en reposo',sueno:'Sueño total',sueno_prof:'Sueño profundo',sueno_rem:'Sueño REM',peso:'Peso',grasa:'Grasa corporal',musculo:'Masa muscular',pasos:'Pasos',vo2:'VO₂max',ta:'TA sistólica',ta_diast:'TA diastólica'};
+  const units={fc:'bpm',sueno:'h',sueno_prof:'h',sueno_rem:'h',peso:'kg',grasa:'%',musculo:'kg',pasos:'pasos',vo2:'ml/kg/min',ta:'mmHg',ta_diast:'mmHg'};
+  const fuentes={fc:'Garmin',sueno:'Garmin',sueno_prof:'Garmin',sueno_rem:'Garmin',peso:'Withings',grasa:'Withings',musculo:'Withings',pasos:'Apple Health',vo2:'Garmin',ta:'Withings BPM',ta_diast:'Withings BPM'};
   const tbody=document.getElementById('d-ultimo-dia');
   if(tbody){
     tbody.innerHTML=keys.map(k=>{
