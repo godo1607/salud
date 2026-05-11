@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 00:40</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 08:39</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1226,7 +1226,7 @@ function updateDataLog(fileName,fecha,values){
   if(ve)ve.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#F8FAFC"><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Columna CSV</th><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Métrica</th><th style="text-align:right;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Valor</th><th style="text-align:center;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Tipo</th></tr></thead><tbody>'+
     values.map(v=>`<tr style="border-bottom:1px solid #F1F5F9"><td style="padding:5px 8px;color:#94A3B8;font-size:10px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.col.split('(')[0].trim()}</td><td style="padding:5px 8px;color:#475569">${v.nombre}</td><td style="padding:5px 8px;font-weight:700;color:#1E293B;text-align:right">${v.valor!==null?v.valor:'—'} ${v.unidad}</td><td style="padding:5px 8px;text-align:center"><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;${v.tipo==='diario'?'background:#DBEAFE;color:#1E40AF':'background:#D1FAE5;color:#065F46'}">${v.tipo}</span></td></tr>`).join('')+'</tbody></table>';
 }
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyE4MEcuyECsPnQj9ztSbZTBDoxXLORbgFt-aDs2Y55bsrffqgBZ6zsaPR9NlaIaMtP/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbZf5x2pfsWGE5NypiehhHhmth9pNM5dBzDLr-gdmZ0HY4ESEDc3iNUS9Sd0o-397a/exec';
 const ALTURA_M = 1.80;
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
@@ -1249,14 +1249,14 @@ const INDICADORES={
     {key:'ldl',  label:'LDL',          unit:'mg/dL',    decimals:0, perc:'Media poblacional', percObj:{2031:'Top 30%'}, manual:true, historia:[{fecha:'jul-16',val:174},{fecha:'jun-18',val:168},{fecha:'jun-19',val:172},{fecha:'dic-21',val:171},{fecha:'feb-23',val:213},{fecha:'ago-23',val:127},{fecha:'ene-24',val:129},{fecha:'feb-25',val:98},{fecha:'dic-25',val:135},{fecha:'feb-26',val:132}]},
     {key:'hdl',  label:'HDL',          unit:'mg/dL',    decimals:0, perc:'Por debajo media',  percObj:{2031:'Media'},   manual:true, historia:[{fecha:'jul-16',val:51},{fecha:'jun-18',val:44},{fecha:'jun-19',val:52},{fecha:'dic-21',val:50},{fecha:'feb-23',val:54},{fecha:'ago-23',val:56},{fecha:'ene-24',val:55},{fecha:'feb-25',val:52},{fecha:'dic-25',val:45},{fecha:'feb-26',val:44}]},
     {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
-    {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:true, historia:[{fecha:'ene-24',val:121},{fecha:'may-26',val:121}]},
+    {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:false, subkeys:['ta_diast'], sublabels:['Diastólica']},
     {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ene-24',val:24.3},{fecha:'ene-24',val:23.7}]},
     {key:'hcy',  label:'Homocisteína', unit:'µmol/L',   decimals:1, perc:'Elevada',           percObj:{2027:'<15'},     manual:true, historia:[{fecha:'ago-23',val:25.9}]},
   ]
 };
 
 // ── VALORES MANUALES (con persistencia localStorage) ──────────────
-const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},ta:{val:121,fecha:'may-2026'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
+const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
 let MANUAL_VALS = {};
 function loadManuales(){
   try{const s=localStorage.getItem('pc_manuales');if(s)MANUAL_VALS=JSON.parse(s);else MANUAL_VALS={...MANUAL_DEFAULTS};}
@@ -1356,7 +1356,7 @@ async function loadFromDrive(){
     if(!Array.isArray(rows)||rows.length===0)throw new Error('Sin datos');
 
     HIST={};
-    const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2'];
+    const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2','ta_sist','ta_diast'];
     allKeys.forEach(k=>{HIST[k]=[];});
 
     rows.forEach(r=>{
@@ -1366,8 +1366,7 @@ async function loadFromDrive(){
         const raw=r[k];
         const val=parseFloat(raw);
         if(!isNaN(val)&&val>0)HIST[k].push({fecha,val});
-      });
-    });
+      });    });
 
     allKeys.forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
 
@@ -1378,6 +1377,7 @@ async function loadFromDrive(){
     }
 
     // Manuales
+    // Manuales — sobreescribir HIST con valor de localStorage
     Object.keys(MANUAL_VALS).forEach(k=>{
       HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];
     });
@@ -1703,9 +1703,16 @@ function renderRGrid(gridId,inds){
       footerRight=`<span style="font-size:10px;color:#64748B">IMC ${imc.toFixed(1)}</span>`;
     } else if(ind.key==='sueno'&&val!==null){
       displayVal=`<span style="color:${color}">${val.toFixed(2)}</span>`;
-    } else if(ind.key==='ta'&&MANUAL_VALS['ta']){
-      displayVal=`<span style="color:${color}">${MANUAL_VALS['ta'].val}</span>`;
-      footerRight=`<span style="font-size:10px;color:#94A3B8">${MANUAL_VALS['ta'].fecha}</span>`;
+    } else if(ind.key==='ta'){
+      const statsSist=calcStats('ta_sist');
+      const statsDiast=calcStats('ta_diast');
+      const sist=statsSist.last||MANUAL_VALS['ta']?.val||null;
+      const diast=statsDiast.last||null;
+      const displaySist=sist?Math.round(sist):'—';
+      const displayDiast=diast?Math.round(diast):'—';
+      const color=valColor('ta',sist);
+      displayVal=`<span style="color:${color}">${displaySist}/${displayDiast}</span>`;
+      footerRight=`<span style="font-size:10px;color:#94A3B8">${statsSist.last?'auto':'manual'}</span>`;
     } else {
       const dv=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';
       displayVal=`<span style="color:${val!==null?color:'#94A3B8'}">${dv}</span>`;
