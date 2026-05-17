@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 11:16</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:24</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1901,8 +1901,32 @@ function renderSpotDetail(ind,anio,obj,o){
   const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
   rRenderChartSpot(ind,obj,series,'r-trend-canvas');
 
+  // Subkeys para TA — mostrar diastólica
   const ss=document.getElementById('r-sub-section');
-  if(ss)ss.innerHTML='';
+  if(ss && ind.subkeys && ind.subkeys.length > 0 && !ind.manual) {
+    ss.innerHTML = ind.subkeys.map((sk,i) => {
+      const subHist = [...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const subLast = subHist.length>0?subHist[subHist.length-1]:null;
+      const subPrev = subHist.length>1?subHist[subHist.length-2]:null;
+      const subObj = getObj(sk, anio);
+      const subO = OBJ_PUNTOS[sk];
+      return `<div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #E2E8F0">
+        <p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">
+          ${ind.sublabels[i]} · último: <span style="color:#1E293B">${subLast?Math.round(subLast.val)+' mmHg':'—'}</span>
+          ${subPrev?' · anterior: '+Math.round(subPrev.val)+' mmHg ('+subPrev.fecha+')':''}
+        </p>
+        <div style="position:relative;height:80px"><canvas id="r-sub-canvas-${sk}"></canvas></div>
+      </div>`;
+    }).join('');
+    ind.subkeys.forEach((sk,i) => {
+      const subHist = [...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const subObj = getObj(sk, anio);
+      const subInd = {key:sk, label:ind.sublabels[i], unit:'mmHg', decimals:0};
+      rRenderChartSpot(subInd, subObj, subHist, 'r-sub-canvas-'+sk);
+    });
+  } else if(ss) {
+    ss.innerHTML='';
+  }
 }
 
 function rCloseDetail(){
