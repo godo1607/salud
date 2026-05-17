@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 10:52</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 11:16</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1245,7 +1245,7 @@ const INDICADORES={
     {key:'pasos',  label:'Pasos',          unit:'pasos',decimals:0, perc:'Media',   percObj:{2027:'Top 25%'}},
   ],
   spot:[
-    {key:'vo2',  label:'VO₂max',       unit:'ml/kg/min',decimals:1, perc:'Top 10%', percObj:{2031:'Top 10%'}},
+    {key:'vo2',  label:'VO₂max',       unit:'ml/kg/min',decimals:1, perc:'Top 10%', percObj:{2031:'Top 10%'}, manual:true, historia:[{fecha:'feb-19',val:57.2},{fecha:'jun-25',val:56.0},{fecha:'ago-25',val:43.6},{fecha:'sep-25',val:49.8},{fecha:'abr-26',val:50.1},{fecha:'may-26',val:51.0}]},
     {key:'ldl',  label:'LDL',          unit:'mg/dL',    decimals:0, perc:'Media poblacional', percObj:{2031:'Top 30%'}, manual:true, historia:[{fecha:'jul-16',val:174},{fecha:'jun-18',val:168},{fecha:'jun-19',val:172},{fecha:'dic-21',val:171},{fecha:'feb-23',val:213},{fecha:'ago-23',val:127},{fecha:'ene-24',val:129},{fecha:'feb-25',val:98},{fecha:'dic-25',val:135},{fecha:'feb-26',val:132}]},
     {key:'hdl',  label:'HDL',          unit:'mg/dL',    decimals:0, perc:'Por debajo media',  percObj:{2031:'Media'},   manual:true, historia:[{fecha:'jul-16',val:51},{fecha:'jun-18',val:44},{fecha:'jun-19',val:52},{fecha:'dic-21',val:50},{fecha:'feb-23',val:54},{fecha:'ago-23',val:56},{fecha:'ene-24',val:55},{fecha:'feb-25',val:52},{fecha:'dic-25',val:45},{fecha:'feb-26',val:44}]},
     {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
@@ -1256,7 +1256,7 @@ const INDICADORES={
 };
 
 // ── VALORES MANUALES (con persistencia localStorage) ──────────────
-const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'}};
+const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'},vo2:{val:51,fecha:'may-2026'}};
 let MANUAL_VALS = {};
 function loadManuales(){
   try{const s=localStorage.getItem('pc_manuales');if(s)MANUAL_VALS=JSON.parse(s);else MANUAL_VALS={...MANUAL_DEFAULTS};}
@@ -1383,18 +1383,14 @@ async function loadFromDrive(){
 
     allKeys.forEach(k=>{HIST[k].sort((a,b)=>a.fecha.localeCompare(b.fecha));});
 
-    // VO2max: usar último valor del histórico completo
-    if(data.lastVo2&&data.lastVo2>0){
-      LAST_VO2={val:data.lastVo2,fecha:data.lastVo2Fecha||'—'};
-      HIST['vo2']=[{fecha:data.lastVo2Fecha||'2026-01-01',val:data.lastVo2}];
-    }
+    // VO2max es manual — no sobreescribir con datos del histórico automático
+    // (ya se gestiona en MANUAL_VALS)
 
     // Manuales
     // Manuales — sobreescribir HIST con valor de localStorage
     Object.keys(MANUAL_VALS).forEach(k=>{
       HIST[k]=[{fecha:MANUAL_VALS[k].fecha,val:MANUAL_VALS[k].val}];
     });
-
     // Meta para pestaña datos
     const fechas=rows.map(r=>String(r['fecha']||'').slice(0,10)).filter(f=>f.length===10).sort();
     DATA_META={
