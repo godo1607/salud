@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 22:41</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 22:44</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1240,6 +1240,7 @@ function updateDataLog(fileName,fecha,values){
 }
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx976XpB2HyaX7cJ3xWxJFppG_SQ5EMGwP-5UaBJc4t73p7jx9FOABWH9CwxmQqmSis/exec';
 const ALTURA_M = 1.80;
+const PESOS = {ldl:0.15,vo2:0.15,fc:0.10,sueno:0.10,hba1c:0.10,ta:0.10,grasa:0.08,musculo:0.08,hdl:0.07,vitd:0.07,hcy:0.05,pasos:0.05};
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
 function interpolarObj(puntos,anio){const años=Object.keys(puntos).map(Number).sort((a,b)=>a-b);if(anio<=años[0])return puntos[años[0]];if(anio>=años[años.length-1])return puntos[años[años.length-1]];for(let i=0;i<años.length-1;i++){const a0=años[i],a1=años[i+1];if(anio>=a0&&anio<=a1){const t=(anio-a0)/(a1-a0);return Math.round((puntos[a0]+t*(puntos[a1]-puntos[a0]))*100)/100;}}return null;}
