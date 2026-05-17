@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:36</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:40</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1707,9 +1707,13 @@ function renderRGrid(gridId,inds){
     const hist=HIST[ind.key]||[];
     const sortedHist=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
     const lastFecha=sortedHist.length>0?sortedHist[0].fecha:'';
-    const lastFechaShort=lastFecha?lastFecha.slice(5).replace('-','/'):'';// MM/DD → DD/MM
-    const [mm,dd]=lastFechaShort.split('/');
-    const fechaDisplay=lastFecha?(dd+'/'+mm):'—';
+    let fechaDisplay='—';
+    if(lastFecha){
+      // Formato YYYY-MM-DD → DD/MM
+      const isoM = lastFecha.match(/^\d{4}-(\d{2})-(\d{2})$/);
+      if(isoM) fechaDisplay=isoM[2]+'/'+isoM[1];
+      else fechaDisplay=lastFecha; // formato texto como "feb-2026"
+    }
 
     if(ind.key==='pasos'&&val!==null){
       displayVal=`<span style="color:${color}">${Math.round(val).toLocaleString('es-ES')}</span>`;
