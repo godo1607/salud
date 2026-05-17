@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v11/05/2026 10:40</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 10:40</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1360,19 +1360,15 @@ async function loadFromDrive(){
     allKeys.forEach(k=>{HIST[k]=[];});
 
     rows.forEach(r=>{
-      let fechaRaw = r['fecha']||'';
+      let fechaRaw = String(r['fecha']||'');
       let fecha;
-      // Google Sheets puede devolver fechas como objetos Date serializados
-      if(typeof fechaRaw === 'string' && fechaRaw.match(/^\d{4}-\d{2}-\d{2}/)){
-        fecha = fechaRaw.slice(0,10);
+      // Extraer YYYY-MM-DD directamente del string sin pasar por objeto Date
+      // Formatos posibles: "2026-05-16", "2026-05-16T00:00:00.000Z", "Mon May 16 2026..."
+      const isoMatch = fechaRaw.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if(isoMatch){
+        fecha = isoMatch[1]+'-'+isoMatch[2]+'-'+isoMatch[3];
       } else {
-        // Intentar parsear como fecha
-        const d = new Date(fechaRaw);
-        if(!isNaN(d.getTime())){
-          fecha = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-        } else {
-          return; // fecha inválida, saltar
-        }
+        return; // fecha inválida, saltar
       }
       if(!fecha||fecha.length<10)return;
       allKeys.forEach(k=>{
