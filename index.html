@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:43</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:48</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -300,6 +300,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
     <span class="r-perc-badge" id="r-perc-badge">—</span>
     <span class="r-perc-target" id="r-perc-target">—</span>
   </div>
+  <div id="r-sub-section"></div>
 </div>
 
 <div class="r-sec" style="margin-top:16px">Performance global 2026</div>
@@ -1710,10 +1711,14 @@ function renderRGrid(gridId,inds){
     const lastFecha=sortedHist.length>0?sortedHist[0].fecha:'';
     let fechaDisplay='—';
     if(lastFecha){
-      // Formato YYYY-MM-DD → DD/MM
-      const isoM = lastFecha.match(/^\d{4}-(\d{2})-(\d{2})$/);
-      if(isoM) fechaDisplay=isoM[2]+'/'+isoM[1];
-      else fechaDisplay=lastFecha; // formato texto como "feb-2026"
+      const isoM = lastFecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(isoM) fechaDisplay=isoM[3]+'/'+isoM[2]+'/'+isoM[1];
+      else {
+        const meses={ene:'01',feb:'02',mar:'03',abr:'04',may:'05',jun:'06',jul:'07',ago:'08',sep:'09',oct:'10',nov:'11',dic:'12'};
+        const tm = lastFecha.match(/^(\w{3})-(\d{4})$/);
+        if(tm&&meses[tm[1]]) fechaDisplay='01/'+meses[tm[1]]+'/'+tm[2];
+        else fechaDisplay=lastFecha;
+      }
     }
 
     if(ind.key==='pasos'&&val!==null){
