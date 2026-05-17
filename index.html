@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:33</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 19:36</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1697,11 +1697,19 @@ function renderRGrid(gridId,inds){
   grid.innerHTML=inds.map(ind=>{
     let stats=calcStats(ind.key);
     let val=stats.last;
-    // VO2max: usar LAST_VO2 si no hay en año en curso
+    let lastFechaKey = ind.key; // clave para buscar la última fecha
     if(ind.key==='vo2'&&(val===null)&&LAST_VO2.val){val=LAST_VO2.val;}
     const color=valColor(ind.key,val);
     const tr=trendIcon(ind.key,HIST[ind.key]);
     let displayVal,footerRight='';
+
+    // Obtener última fecha del indicador
+    const hist=HIST[ind.key]||[];
+    const sortedHist=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    const lastFecha=sortedHist.length>0?sortedHist[0].fecha:'';
+    const lastFechaShort=lastFecha?lastFecha.slice(5).replace('-','/'):'';// MM/DD → DD/MM
+    const [mm,dd]=lastFechaShort.split('/');
+    const fechaDisplay=lastFecha?(dd+'/'+mm):'—';
 
     if(ind.key==='pasos'&&val!==null){
       displayVal=`<span style="color:${color}">${Math.round(val).toLocaleString('es-ES')}</span>`;
@@ -1720,14 +1728,11 @@ function renderRGrid(gridId,inds){
       const diast=statsDiast.last||null;
       const displaySist=sist?Math.round(sist):'—';
       const displayDiast=diast?Math.round(diast):'—';
-      const color=valColor('ta',sist);
-      displayVal=`<span style="color:${color}">${displaySist}/${displayDiast}</span>`;
-      const lastFecha=statsSist.series15&&statsSist.series15.length>0?statsSist.series15[statsSist.series15.length-1].fecha.slice(0,7):'';
-      footerRight=`<span style="font-size:10px;color:#94A3B8">${lastFecha}</span>`;
+      const taColor=valColor('ta',sist);
+      displayVal=`<span style="color:${taColor}">${displaySist}/${displayDiast}</span>`;
     } else {
       const dv=val!==null?(ind.decimals===0?Math.round(val):val.toFixed(ind.decimals)):'—';
       displayVal=`<span style="color:${val!==null?color:'#94A3B8'}">${dv}</span>`;
-      if(ind.manual&&MANUAL_VALS[ind.key])footerRight=`<span style="font-size:10px;color:#94A3B8">${MANUAL_VALS[ind.key].fecha}</span>`;
     }
 
     return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')">
@@ -1735,7 +1740,7 @@ function renderRGrid(gridId,inds){
       <p class="r-card-val">${displayVal} <span class="r-card-unit">${ind.unit}</span></p>
       <div class="r-card-footer">
         <span class="r-trend ${tr.cls}">${tr.icon}</span>
-        ${footerRight}
+        <span style="font-size:10px;color:#94A3B8">${fechaDisplay}</span>
       </div>
     </div>`;
   }).join('');
