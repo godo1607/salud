@@ -183,7 +183,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 10:40</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v17/05/2026 10:52</span></p>
   </div>
   <div class="header-right">
     <span id="status-badge" class="status-loading">Cargando datos...</span>
@@ -1226,7 +1226,7 @@ function updateDataLog(fileName,fecha,values){
   if(ve)ve.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#F8FAFC"><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Columna CSV</th><th style="text-align:left;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Métrica</th><th style="text-align:right;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Valor</th><th style="text-align:center;padding:5px 8px;color:#94A3B8;font-size:10px;border-bottom:1px solid #E2E8F0">Tipo</th></tr></thead><tbody>'+
     values.map(v=>`<tr style="border-bottom:1px solid #F1F5F9"><td style="padding:5px 8px;color:#94A3B8;font-size:10px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.col.split('(')[0].trim()}</td><td style="padding:5px 8px;color:#475569">${v.nombre}</td><td style="padding:5px 8px;font-weight:700;color:#1E293B;text-align:right">${v.valor!==null?v.valor:'—'} ${v.unidad}</td><td style="padding:5px 8px;text-align:center"><span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;${v.tipo==='diario'?'background:#DBEAFE;color:#1E40AF':'background:#D1FAE5;color:#065F46'}">${v.tipo}</span></td></tr>`).join('')+'</tbody></table>';
 }
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCRFWmOyS_mw4CM7BAegSviO4MspgqPhDQkZvaUHNPTe5tYWQ7iu96ysx9vN8LGkjT/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxGcz_bYRGKYFzW3uw2M8lPotyk_GRGEPROt3rUQ4SlrRLja9eHKL3-aqCcGSvy9jl/exec';
 const ALTURA_M = 1.80;
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
