@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 22:10</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 22:19</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -349,18 +349,19 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <div id="pane-alertas" class="pane">
   <div class="sec">Urgente — acción inmediata</div>
   <div class="ab ab-red"><strong>LDL sin controlar</strong> — 132 mg/dL (objetivo &lt;70). Sin estatina desde ene-2025. Pedir cita Dra. Merino esta semana. +1.5–2.5 años EV.</div>
-  <div class="ab ab-red"><strong>Homocisteína elevada</strong> — 25.9 µmol/L (ago-2023). Sin control desde hace 20 meses. Añadir B6 25 mg/día al Acfol. Repetir analítica ago-sep 2026.</div>
+
 
   <div class="sec" style="margin-top:16px">Importante — corregir próximas semanas</div>
   <div class="ab ab-amber"><strong>Vitamina D insuficiente</strong> — 23.7 ng/mL (objetivo ≥40). Cambiar calcifediol 1 cáp/mes por D3 2.000–4.000 UI/día. Sin receta.</div>
   <div class="ab ab-amber"><strong>Déficit de proteína</strong> — 86 g/día vs objetivo 120–150 g/día. Añadir 1–2 tomas proteína de suero + huevos + legumbres.</div>
   <div class="ab ab-amber"><strong>Déficit de fibra</strong> — 9 g/día vs objetivo ≥25 g/día. Añadir semillas chía, legumbres, pan integral.</div>
+  <div class="ab ab-amber"><strong>Homocisteína — medir en próxima analítica</strong> — Último valor: 25.9 µmol/L (ago-2023, límite &lt;15). Factor de riesgo CV relevante con tus antecedentes familiares. Pedir en analítica de control.</div>
   <div class="ab ab-amber"><strong>Eco renal pendiente</strong> — Quiste Bosniak II (33×31 mm). Último control nov-2025. Próxima eco: may-jun 2026. Pedir cita Dra. Carretero.</div>
 
   <div class="sec" style="margin-top:16px">Seguimiento — medio plazo</div>
   <div class="ab ab-blue"><strong>HDL bajo</strong> — 44 mg/dL (objetivo ≥52). Mejorar con HIIT + reducir alcohol + estatina cuando se retome.</div>
   <div class="ab ab-blue"><strong>Fuerza estructurada</strong> — Iniciar 2×/semana: sentadilla, peso muerto, press vertical, remo con carga. +1–1.5 años EV.</div>
-  <div class="ab ab-blue"><strong>Analítica de control</strong> — Mes 2: lipídico + vit D + homocisteína + CK (si nueva estatina) + folato.</div>
+  <div class="ab ab-blue"><strong>Analítica de control</strong> — Mes 2: lipídico + vit D + CK (si nueva estatina) + folato.</div>
 </div>
 
 <!-- ══ HITOS ════════════════════════════════════════════════════════ -->
@@ -556,7 +557,6 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
       <div class="obj-item"><strong>LDL</strong> &lt;70 mg/dL sostenido ≥5 años</div>
       <div class="obj-item"><strong>VO₂max</strong> ≥48 ml/kg/min a los 60a</div>
       <div class="obj-item"><strong>Vitamina D</strong> ≥40 ng/mL estable</div>
-      <div class="obj-item"><strong>Homocisteína</strong> &lt;10 µmol/L confirmada</div>
       <div class="obj-item"><strong>Proteína</strong> ≥1.6 g/kg/día establecido</div>
       <div class="obj-item"><strong>Fibra</strong> ≥25 g/día habitual</div>
       <div class="obj-item"><strong>Fuerza</strong> 2–3×/semana con progresión</div>
@@ -758,7 +758,7 @@ const METRICAS = [
   {param:'TA sistólica (mmHg)', val:'121', estado:'ok',   obj27:'<125', obj31:'<125', obj41:'<130', obj51:'<135', obj61:'<140', fuente:'Withings BPM 2026'},
   {param:'HbA1c (%)',           val:'5.4', estado:'ok',   obj27:'<5.5', obj31:'<5.5', obj41:'<5.7', obj51:'<6.0', obj61:'<6.5', fuente:'Analítica dic-2025'},
   {param:'Vitamina D (ng/mL)',  val:'23.7',estado:'alert',obj27:'≥35',  obj31:'≥40',  obj41:'≥40',  obj51:'≥40',  obj61:'≥40',  fuente:'Analítica dic-2025'},
-  {param:'Homocisteína (µmol/L)',val:'25.9',estado:'alert',obj27:'<15', obj31:'<10',  obj41:'<10',  obj51:'<12',  obj61:'<13',  fuente:'Rotger ago-2023'},
+  {param:val:'25.9',estado:'alert',obj27:'<15', obj31:'<10',  obj41:'<10',  obj51:'<12',  obj61:'<13',  fuente:'Rotger ago-2023'},
   {param:'Proteína (g/kg/día)', val:'1.15',estado:'alert',obj27:'≥1.6',obj31:'≥1.6', obj41:'≥1.6', obj51:'≥1.4', obj61:'≥1.2', fuente:'CalAI sep25–may26'},
   {param:'Fibra (g/día)',       val:'9',   estado:'alert',obj27:'≥20',  obj31:'≥25',  obj41:'≥25',  obj51:'≥25',  obj61:'≥25',  fuente:'CalAI sep25–may26'},
   {param:'Grasa corporal (%)',  val:'17.7',estado:'warn', obj27:'<17',  obj31:'14-16',obj41:'16-18',obj51:'18-20',obj61:'18-22',fuente:'Withings abr-2026'},
@@ -791,7 +791,6 @@ const HITOS = {
   ],
   mes:[
     {id:'h3',title:'Añadir vitamina B6 25 mg/día al Acfol',
-     desc:'Normalizar homocisteína 25.9 → <10 µmol/L · confirmar en analítica ago-sep 2026'},
     {id:'h4',title:'Aumentar proteína a 120–150 g/día',
      desc:'Añadir 1–2 tomas proteína suero + huevos desayuno + legumbre 3x/sem'},
     {id:'h5',title:'Fuerza estructurada 2×/semana',
@@ -801,7 +800,7 @@ const HITOS = {
   ],
   q2:[
     {id:'h7',title:'Analítica de control',
-     desc:'Lipídico + vit D + homocisteína + CK · confirmar que las correcciones funcionan'},
+     desc:'Lipídico + vit D + CK · confirmar que las correcciones funcionan'},
     {id:'h8',title:'LDL <100 mg/dL por primera vez con nuevo tratamiento',
      desc:'Meta intermedia hacia el objetivo final <70 mg/dL'},
     {id:'h9',title:'Vitamina D ≥30 ng/mL confirmada en analítica',
@@ -810,7 +809,7 @@ const HITOS = {
      desc:'Chía + fruta + pan integral + legumbre · verificar en CalAI'},
   ],
   q3:[
-    {id:'h11',title:'Homocisteína <15 µmol/L confirmada',
+    {id:'h11',title:'DISABLED_HCY',
      desc:'En analítica ago-sep 2026 · objetivo final <10 µmol/L'},
     {id:'h12',title:'LDL <70 mg/dL primera vez',
      desc:'Meta principal del plan para 2026'},
@@ -880,7 +879,6 @@ LDL           132     mg/dL       2026-02-15  <100
 HDL           44      mg/dL       2026-02-15  ≥48
 VO2max        50.1    ml/kg/min   2026-04-30  ≥52
 Vitamina_D    23.7    ng/mL       2025-12-15  ≥35
-Homocisteina  25.9    umol/L      2023-08-01  <15
 HbA1c         5.4     %           2025-12-15  <5.5
 TA_sistolica  121     mmHg        2026-04-30  <125
 FC_reposo     59.8    bpm         2026-04-30  ≤58
@@ -1036,7 +1034,6 @@ function renderProgressBars() {
   const items = [
     {label:'LDL (obj. <70)',    now:132, target:70,  max:220, hi:false, unit:'mg/dL'},
     {label:'Vitamina D (≥40)',  now:23.7,target:40,  max:80,  hi:true,  unit:'ng/mL'},
-    {label:'Homocisteína (<10)',now:25.9,target:10,  max:35,  hi:false, unit:'µmol/L'},
     {label:'HDL (≥52)',         now:44,  target:52,  max:80,  hi:true,  unit:'mg/dL'},
     {label:'VO₂max (≥52)',      now:50.1,target:52,  max:65,  hi:true,  unit:'ml/kg/min'},
     {label:'Proteína (≥1.6 g/kg)',now:1.15,target:1.6,max:2.2,hi:true, unit:'g/kg/día'},
@@ -1140,7 +1137,7 @@ function renderMetrics() {
 
   // Barras 2027
   const bar_items = METRICAS.filter(m=>['LDL (mg/dL)','HDL (mg/dL)','Vitamina D (ng/mL)',
-    'Homocisteína (µmol/L)','VO₂max (ml/kg/min)','Proteína (g/kg/día)','Fibra (g/día)'].includes(m.param));
+    'VO₂max (ml/kg/min)','Proteína (g/kg/día)','Fibra (g/día)'].includes(m.param));
   const el_b27 = document.getElementById('bars-2027');
   if(el_b27) el_b27.innerHTML =
     '<div style="font-size:11px;color:#64748B;margin-bottom:10px">Barras: valor actual. Línea gris vertical: objetivo 2027.</div>' +
@@ -1148,9 +1145,9 @@ function renderMetrics() {
       const num = parseFloat(m.val);
       // Escala ad-hoc por parámetro
       const max_map = {'LDL (mg/dL)':220,'HDL (mg/dL)':80,'Vitamina D (ng/mL)':80,
-        'Homocisteína (µmol/L)':35,'VO₂max (ml/kg/min)':65,'Proteína (g/kg/día)':2.2,'Fibra (g/día)':40};
+        'VO₂max (ml/kg/min)':65,'Proteína (g/kg/día)':2.2,'Fibra (g/día)':40};
       const target_map = {'LDL (mg/dL)':100,'HDL (mg/dL)':48,'Vitamina D (ng/mL)':35,
-        'Homocisteína (µmol/L)':15,'VO₂max (ml/kg/min)':52,'Proteína (g/kg/día)':1.6,'Fibra (g/día)':20};
+        'VO₂max (ml/kg/min)':52,'Proteína (g/kg/día)':1.6,'Fibra (g/día)':20};
       const mx = max_map[m.param]||100;
       const tg = target_map[m.param]||50;
       const pct = Math.min(100,Math.round(num/mx*100));
@@ -1240,11 +1237,11 @@ function updateDataLog(fileName,fecha,values){
 }
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxrVHKX1jNqrnmjB9LoLe6c0gGz_JDmB8ECGMZg_5VaQYO3uaBYuWwT2Wsu8QrVVlc0/exec';
 const ALTURA_M = 1.80;
-const PESOS = {ldl:0.15,vo2:0.15,fc:0.10,sueno:0.10,hba1c:0.10,ta:0.10,grasa:0.08,musculo:0.08,hdl:0.07,vitd:0.07,hcy:0.05,pasos:0.05};
+const PESOS = {ldl:0.15,vo2:0.15,fc:0.10,sueno:0.10,hba1c:0.10,ta:0.10,grasa:0.07,musculo:0.07,hdl:0.06,vitd:0.05,pasos:0.05};
 
 // ── OBJETIVOS ANUALES ─────────────────────────────────────────────
 function interpolarObj(puntos,anio){const años=Object.keys(puntos).map(Number).sort((a,b)=>a-b);if(anio<=años[0])return puntos[años[0]];if(anio>=años[años.length-1])return puntos[años[años.length-1]];for(let i=0;i<años.length-1;i++){const a0=años[i],a1=años[i+1];if(anio>=a0&&anio<=a1){const t=(anio-a0)/(a1-a0);return Math.round((puntos[a0]+t*(puntos[a1]-puntos[a0]))*100)/100;}}return null;}
-const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},sueno_prof:{dir:'higher',u:'h',pts:{2026:1.0,2027:1.1,2031:1.2,2041:1.1,2051:1.0,2061:0.9,2076:0.8}},sueno_rem:{dir:'higher',u:'h',pts:{2026:0.9,2027:1.0,2031:1.1,2041:1.0,2051:0.9,2061:0.8,2076:0.7}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta_diast:{dir:'lower',u:'mmHg',pts:{2026:80,2027:80,2031:80,2041:85,2051:85,2061:90,2076:90}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}},hcy:{dir:'lower',u:'µmol/L',pts:{2026:15,2027:15,2031:10,2041:10,2051:12,2061:13,2076:13}}};
+const OBJ_PUNTOS={fc:{dir:'lower',u:'bpm',pts:{2026:60,2027:58,2031:57,2041:59,2051:62,2061:65,2076:68}},sueno:{dir:'higher',u:'h',pts:{2026:7.5,2027:7.5,2031:7.5,2041:7.5,2051:7.5,2061:7.5,2076:7.5}},sueno_prof:{dir:'higher',u:'h',pts:{2026:1.0,2027:1.1,2031:1.2,2041:1.1,2051:1.0,2061:0.9,2076:0.8}},sueno_rem:{dir:'higher',u:'h',pts:{2026:0.9,2027:1.0,2031:1.1,2041:1.0,2051:0.9,2061:0.8,2076:0.7}},peso:{dir:'lower',u:'kg',pts:{2026:75,2027:75,2031:74,2041:76,2051:78,2061:80,2076:80}},grasa:{dir:'lower',u:'%',pts:{2026:17,2027:17,2031:16,2041:18,2051:20,2061:22,2076:22}},musculo:{dir:'higher',u:'kg',pts:{2026:59,2027:59,2031:60,2041:57,2051:52,2061:46,2076:40}},pasos:{dir:'higher',u:'pasos',pts:{2026:10000,2027:10000,2031:10000,2041:9000,2051:8000,2061:6000,2076:5000}},vo2:{dir:'higher',u:'ml/kg/min',pts:{2026:50,2027:52,2031:50,2041:42,2051:35,2061:28,2076:20}},ldl:{dir:'lower',u:'mg/dL',pts:{2026:100,2027:100,2031:70,2041:70,2051:70,2061:70,2076:70}},hdl:{dir:'higher',u:'mg/dL',pts:{2026:48,2027:48,2031:52,2041:50,2051:48,2061:45,2076:45}},hba1c:{dir:'lower',u:'%',pts:{2026:5.5,2027:5.5,2031:5.5,2041:5.7,2051:6.0,2061:6.5,2076:6.5}},ta_diast:{dir:'lower',u:'mmHg',pts:{2026:80,2027:80,2031:80,2041:85,2051:85,2061:90,2076:90}},ta:{dir:'lower',u:'mmHg',pts:{2026:125,2027:125,2031:125,2041:130,2051:135,2061:140,2076:140}},vitd:{dir:'higher',u:'ng/mL',pts:{2026:30,2027:35,2031:40,2041:40,2051:40,2061:40,2076:40}}};
 function getObj(key,anio){const o=OBJ_PUNTOS[key];if(!o)return null;return interpolarObj(o.pts,anio);}
 
 // ── INDICADORES ───────────────────────────────────────────────────
@@ -1264,12 +1261,11 @@ const INDICADORES={
     {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
     {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:false, spot:true, subkeys:['ta_diast'], sublabels:['Diastólica'], historia:[]},
     {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ago-2023',val:40.4},{fecha:'dic-2025',val:23.7}]},
-    {key:'hcy',  label:'Homocisteína', unit:'µmol/L',   decimals:1, perc:'Elevada',           percObj:{2027:'<15'},     manual:true, historia:[{fecha:'ago-23',val:25.9}]},
   ]
 };
 
 // ── VALORES MANUALES (con persistencia localStorage) ──────────────
-const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'dic-2025'},hcy:{val:25.9,fecha:'ago-2023'},vo2:{val:51,fecha:'may-2026'}};
+const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'dic-2025'},vo2:{val:51,fecha:'may-2026'}};
 let MANUAL_VALS = {};
 function loadManuales(){
   try{const s=localStorage.getItem('pc_manuales');if(s)MANUAL_VALS=JSON.parse(s);else MANUAL_VALS={...MANUAL_DEFAULTS};}
@@ -1590,7 +1586,6 @@ function renderScore() {
       {key:'musculo',label:'Masa muscular',peso:8},
       {key:'hdl',label:'HDL',peso:7},
       {key:'vitd',label:'Vitamina D',peso:7},
-      {key:'hcy',label:'Homocisteína',peso:5},
       {key:'pasos',label:'Pasos',peso:5},
     ];
     weightsEl.innerHTML = weightOrder.map(({key, label, peso}) => {
