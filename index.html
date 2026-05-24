@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:18</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:26</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1964,7 +1964,7 @@ function renderSpotDetail(ind,anio,obj,o){
 
   // Gráfico histórico completo (todas las mediciones)
   document.getElementById('r-chart-year').textContent='2026';
-  document.querySelector('.r-chart-lbl').textContent='Historial de mediciones ';
+  document.querySelector('.r-chart-lbl').textContent=ind.subkeys&&ind.subkeys.length>0?'Sistólica · último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' · anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')':''):'Historial de mediciones 2026';
   const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
   rRenderChartSpot(ind,obj,series,'r-trend-canvas');
 
