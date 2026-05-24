@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:42</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 22:10</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -306,12 +306,12 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   <div class="r-obj-box" id="r-obj-box">—</div>
   <p class="r-chart-lbl">Últimos 15 días vs objetivo <span id="r-chart-year">2026</span></p>
   <div class="r-chart-wrap"><canvas id="r-trend-canvas"></canvas></div>
+  <div id="r-sub-section"></div>
   <div class="r-perc-row">
     <span class="r-perc-lbl">Percentil poblacional</span>
     <span class="r-perc-badge" id="r-perc-badge">—</span>
     <span class="r-perc-target" id="r-perc-target">—</span>
   </div>
-  <div id="r-sub-section"></div>
 </div>
 
 <div class="r-sec" style="margin-top:16px">Performance global 2026</div>
@@ -1263,13 +1263,13 @@ const INDICADORES={
     {key:'hdl',  label:'HDL',          unit:'mg/dL',    decimals:0, perc:'Por debajo media',  percObj:{2031:'Media'},   manual:true, historia:[{fecha:'jul-16',val:51},{fecha:'jun-18',val:44},{fecha:'jun-19',val:52},{fecha:'dic-21',val:50},{fecha:'feb-23',val:54},{fecha:'ago-23',val:56},{fecha:'ene-24',val:55},{fecha:'feb-25',val:52},{fecha:'dic-25',val:45},{fecha:'feb-26',val:44}]},
     {key:'hba1c',label:'HbA1c',        unit:'%',        decimals:1, perc:'Top 20%',           percObj:{2031:'Top 20%'}, manual:true, historia:[{fecha:'dic-21',val:5.4},{fecha:'feb-23',val:5.5},{fecha:'ago-23',val:5.4},{fecha:'ene-24',val:5.4},{fecha:'feb-25',val:5.3},{fecha:'dic-25',val:5.4}]},
     {key:'ta',   label:'TA',           unit:'mmHg',     decimals:0, perc:'Top 15%',           percObj:{2031:'Top 15%'}, manual:false, spot:true, subkeys:['ta_diast'], sublabels:['Diastólica'], historia:[]},
-    {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ene-24',val:24.3},{fecha:'ene-24',val:23.7}]},
+    {key:'vitd', label:'Vitamina D',   unit:'ng/mL',    decimals:1, perc:'Déficit crónico',   percObj:{2031:'Normal'},  manual:true, historia:[{fecha:'ago-2023',val:40.4},{fecha:'dic-2025',val:23.7}]},
     {key:'hcy',  label:'Homocisteína', unit:'µmol/L',   decimals:1, perc:'Elevada',           percObj:{2027:'<15'},     manual:true, historia:[{fecha:'ago-23',val:25.9}]},
   ]
 };
 
 // ── VALORES MANUALES (con persistencia localStorage) ──────────────
-const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'ene-2024'},hcy:{val:25.9,fecha:'ago-2023'},vo2:{val:51,fecha:'may-2026'}};
+const MANUAL_DEFAULTS={ldl:{val:132,fecha:'feb-2026'},hdl:{val:44,fecha:'feb-2026'},hba1c:{val:5.4,fecha:'dic-2025'},vitd:{val:23.7,fecha:'dic-2025'},hcy:{val:25.9,fecha:'ago-2023'},vo2:{val:51,fecha:'may-2026'}};
 let MANUAL_VALS = {};
 function loadManuales(){
   try{const s=localStorage.getItem('pc_manuales');if(s)MANUAL_VALS=JSON.parse(s);else MANUAL_VALS={...MANUAL_DEFAULTS};}
@@ -1983,8 +1983,8 @@ function renderSpotDetail(ind,anio,obj,o){
       const subLast=subHist.length>0?subHist[subHist.length-1]:null;
       const subPrev=subHist.length>1?subHist[subHist.length-2]:null;
       return '<div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #E2E8F0">'+
-        '<p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">'+
-        ind.sublabels[i]+' &middot; último: <span style="color:#1E293B">'+(subLast?Math.round(subLast.val)+' mmHg':'—')+'</span>'+
+        '<p class="r-chart-lbl" style="margin:8px 0 4px">'+
+        ind.sublabels[i]+' &middot; último: <span style="color:#1E293B;font-weight:600">'+(subLast?Math.round(subLast.val)+' mmHg':'—')+'</span>'+
         (subPrev?' &middot; anterior: '+Math.round(subPrev.val)+' mmHg ('+subPrev.fecha+')':'')+
         '</p><div style="position:relative;height:80px"><canvas id="r-sub-canvas-'+sk+'"></canvas></div></div>';
     }).join('');
