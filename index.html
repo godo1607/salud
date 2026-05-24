@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:26</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:42</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1380,12 +1380,15 @@ async function syncInBackground(){
   const pct=document.getElementById('sync-pct');
   if(wrap)wrap.style.display='block';
   try{
-    let fake=0;
+    // Barra proporcional al tiempo: avanza linealmente hasta 95% en ~4s
+    const startTs=Date.now();
+    const EXPECTED_MS=4000;
     const iv=setInterval(()=>{
-      fake=Math.min(fake+Math.random()*10,90);
-      if(bar)bar.style.width=fake+'%';
-      if(pct)pct.textContent=Math.round(fake)+'%';
-    },400);
+      const elapsed=Date.now()-startTs;
+      const prog=Math.min(95,Math.round(elapsed/EXPECTED_MS*95));
+      if(bar)bar.style.width=prog+'%';
+      if(pct)pct.textContent=prog+'%';
+    },100);
     const res=await fetch(SCRIPT_URL+'?action=sync');
     clearInterval(iv);
     if(bar)bar.style.width='100%';
@@ -1899,53 +1902,27 @@ function renderDailyDetail(ind,anio,obj,o){
 }
 
 function renderSpotDetail(ind,anio,obj,o){
-  // Para puntuales: último valor, anterior, histórico completo
-  // Si no es manual, usar HIST; si es manual, usar ind.historia + MANUAL_VALS
+  // Limpiar subsección siempre al inicio
+  const ss=document.getElementById('r-sub-section');
+  if(ss)ss.innerHTML='';
+
+  // Obtener valores
   let historia, lastVal, prevEntry;
   if(ind.manual){
-    historia = ind.historia||[];
-    const mv = MANUAL_VALS[ind.key];
-    lastVal = mv?mv.val:null;
-    prevEntry = historia.length>=2?historia[historia.length-2]:null;
+    historia=ind.historia||[];
+    const mv=MANUAL_VALS[ind.key];
+    lastVal=mv?mv.val:null;
+    prevEntry=historia.length>=2?historia[historia.length-2]:null;
   } else {
-    // TA y otros no-manuales: usar HIST
-    const hist = HIST[ind.key]||[];
-    const sorted = [...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-    lastVal = sorted.length>0?sorted[0].val:null;
-    prevEntry = sorted.length>1?{fecha:sorted[1].fecha,val:sorted[1].val}:null;
-    historia = [...hist].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const hist=HIST[ind.key]||[];
+    const sorted=[...hist].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    lastVal=sorted.length>0?sorted[0].val:null;
+    prevEntry=sorted.length>1?{fecha:sorted[1].fecha,val:sorted[1].val}:null;
+    historia=[...hist].sort((a,b)=>a.fecha.localeCompare(b.fecha));
   }
 
-  const vals=(HIST[ind.key]||[]).map(e=>e.val).filter(v=>v>0);
-  const minVal=vals.length>0?Math.min(...vals):null;
-  const maxVal=vals.length>0?Math.max(...vals):null;
-
+  // Etiquetas de cajas
   document.getElementById('r-lbl-v1').textContent='Último';
-  const _diast0=(HIST['ta_diast']||[]).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  const _d0=_diast0.length>0?_diast0[0].val:null;
-  document.getElementById('r-val-v1').textContent=ind.key==='ta'&&lastVal!==null&&_d0?Math.round(lastVal)+'/'+Math.round(_d0)+' mmHg':(lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—');
-  const _diast1=(HIST['ta_diast']||[]).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  const _d1=_diast1.length>1?_diast1[1].val:null;
-  document.getElementById('r-val-v2').textContent=ind.key==='ta'&&prevEntry&&_d1?Math.round(prevEntry.val)+'/'+Math.round(_d1)+' mmHg ('+prevEntry.fecha+')':(prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—');
-  if(ind.key==='ta'){
-    const _allTA=(HIST['ta']||[]).filter(e=>e.val>0).sort((a,b)=>a.val-b.val);
-    const _allTAD=(HIST['ta_diast']||[]);
-    const _minE=_allTA.length>0?_allTA[0]:null;
-    const _minD=_minE?(_allTAD.find(e=>e.fecha===_minE.fecha)||null):null;
-    document.getElementById('r-val-v3').textContent=_minE?Math.round(_minE.val)+(_minD?'/'+Math.round(_minD.val):'')+' mmHg ('+_minE.fecha+')':'—';
-  } else {
-    document.getElementById('r-val-v3').textContent=minVal!==null?minVal.toFixed(ind.decimals)+' '+ind.unit:'—';
-  }
-  if(ind.key==='ta'){
-    const _allTA2=(HIST['ta']||[]).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
-    const _allTAD2=(HIST['ta_diast']||[]);
-    const _maxE=_allTA2.length>0?_allTA2[0]:null;
-    const _maxD=_maxE?(_allTAD2.find(e=>e.fecha===_maxE.fecha)||null):null;
-    document.getElementById('r-val-v4').textContent=_maxE?Math.round(_maxE.val)+(_maxD?'/'+Math.round(_maxD.val):'')+' mmHg ('+_maxE.fecha+')':'—';
-  } else {
-    document.getElementById('r-val-v4').textContent=maxVal!==null?maxVal.toFixed(ind.decimals)+' '+ind.unit:'—';
-  }
-
   const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');
   if(lbl2)lbl2.textContent='Anterior';
   const lbl3=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');
@@ -1953,46 +1930,70 @@ function renderSpotDetail(ind,anio,obj,o){
   const lbl4=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');
   if(lbl4)lbl4.textContent='Máximo';
 
+  // Valores de cajas — TA muestra sist/diast, resto normal
+  if(ind.key==='ta'){
+    const dSorted=[...(HIST['ta_diast']||[])].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    const d0=dSorted.length>0?dSorted[0].val:null;
+    const d1=dSorted.length>1?dSorted[1].val:null;
+    document.getElementById('r-val-v1').textContent=lastVal!==null?(Math.round(lastVal)+(d0?'/'+Math.round(d0):'')+' mmHg'):'—';
+    document.getElementById('r-val-v2').textContent=prevEntry?(Math.round(prevEntry.val)+(d1?'/'+Math.round(d1):'')+' mmHg ('+prevEntry.fecha+')'):'—';
+    const allSist=[...(HIST['ta']||[])].filter(e=>e.val>0);
+    const allDiast=HIST['ta_diast']||[];
+    const minE=allSist.length>0?allSist.reduce((a,b)=>a.val<b.val?a:b):null;
+    const maxE=allSist.length>0?allSist.reduce((a,b)=>a.val>b.val?a:b):null;
+    const minD=minE?allDiast.find(e=>e.fecha===minE.fecha):null;
+    const maxD=maxE?allDiast.find(e=>e.fecha===maxE.fecha):null;
+    document.getElementById('r-val-v3').textContent=minE?(Math.round(minE.val)+(minD?'/'+Math.round(minD.val):'')+' mmHg ('+minE.fecha+')'):'—';
+    document.getElementById('r-val-v4').textContent=maxE?(Math.round(maxE.val)+(maxD?'/'+Math.round(maxD.val):'')+' mmHg ('+maxE.fecha+')'):'—';
+  } else {
+    const vals=(HIST[ind.key]||[]).map(e=>e.val).filter(v=>v>0);
+    const minVal=vals.length>0?Math.min(...vals):null;
+    const maxVal=vals.length>0?Math.max(...vals):null;
+    document.getElementById('r-val-v1').textContent=lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+    document.getElementById('r-val-v2').textContent=prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—';
+    document.getElementById('r-val-v3').textContent=minVal!==null?minVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+    document.getElementById('r-val-v4').textContent=maxVal!==null?maxVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  }
+
   // Objetivo
   const objBox=document.getElementById('r-obj-box');
-  if(lastVal!==null&&obj!==null){
+  if(lastVal!==null&&obj!==null&&o){
     const ok=o.dir==='lower'?lastVal<=obj:lastVal>=obj;
     const sign=o.dir==='lower'?'≤':'≥';
-    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}
-    else{const diff=Math.abs(lastVal-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(lastVal-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}
+    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML='✓ Objetivo '+anio+' cumplido ('+sign+obj+' '+ind.unit+')';}
+    else{const diff=Math.abs(lastVal-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(lastVal-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=diff+' '+ind.unit+' '+dir+' del objetivo '+anio+' ('+sign+obj+' '+ind.unit+')';}
   }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
 
-  // Gráfico histórico completo (todas las mediciones)
-  document.getElementById('r-chart-year').textContent='2026';
-  document.querySelector('.r-chart-lbl').textContent=ind.subkeys&&ind.subkeys.length>0?'Sistólica · último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' · anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')':''):'Historial de mediciones 2026';
+  // Título y gráfico principal
+  const chartLbl=document.querySelector('#r-detail-panel .r-chart-lbl');
+  const chartYear=document.getElementById('r-chart-year');
+  if(ind.key==='ta'){
+    if(chartLbl)chartLbl.innerHTML='Sistólica &middot; último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' &middot; anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')':'');
+  } else {
+    if(chartLbl)chartLbl.innerHTML='Historial de mediciones <span id="r-chart-year">'+anio+'</span>';
+    if(chartYear)chartYear.textContent=anio;
+  }
   const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
   rRenderChartSpot(ind,obj,series,'r-trend-canvas');
 
-  // Subkeys para TA — mostrar diastólica
-  const ss=document.getElementById('r-sub-section');
-  if(ss && ind.subkeys && ind.subkeys.length > 0 && !ind.manual) {
-    ss.innerHTML = ind.subkeys.map((sk,i) => {
-      const subHist = [...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-      const subLast = subHist.length>0?subHist[subHist.length-1]:null;
-      const subPrev = subHist.length>1?subHist[subHist.length-2]:null;
-      const subObj = getObj(sk, anio);
-      const subO = OBJ_PUNTOS[sk];
-      return `<div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #E2E8F0">
-        <p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">
-          ${ind.sublabels[i]} · último: <span style="color:#1E293B">${subLast?Math.round(subLast.val)+' mmHg':'—'}</span>
-          ${subPrev?' · anterior: '+Math.round(subPrev.val)+' mmHg ('+subPrev.fecha+')':''}
-        </p>
-        <div style="position:relative;height:80px"><canvas id="r-sub-canvas-${sk}"></canvas></div>
-      </div>`;
+  // Subkeys (TA → diastólica)
+  if(ss&&ind.subkeys&&ind.subkeys.length>0&&!ind.manual){
+    ss.innerHTML=ind.subkeys.map((sk,i)=>{
+      const subHist=[...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const subLast=subHist.length>0?subHist[subHist.length-1]:null;
+      const subPrev=subHist.length>1?subHist[subHist.length-2]:null;
+      return '<div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #E2E8F0">'+
+        '<p style="font-size:11px;font-weight:600;color:#475569;margin:0 0 6px">'+
+        ind.sublabels[i]+' &middot; último: <span style="color:#1E293B">'+(subLast?Math.round(subLast.val)+' mmHg':'—')+'</span>'+
+        (subPrev?' &middot; anterior: '+Math.round(subPrev.val)+' mmHg ('+subPrev.fecha+')':'')+
+        '</p><div style="position:relative;height:80px"><canvas id="r-sub-canvas-'+sk+'"></canvas></div></div>';
     }).join('');
-    ind.subkeys.forEach((sk,i) => {
-      const subHist = [...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-      const subObj = getObj(sk, anio);
-      const subInd = {key:sk, label:ind.sublabels[i], unit:'mmHg', decimals:0};
-      rRenderChartSpot(subInd, subObj, subHist, 'r-sub-canvas-'+sk);
+    ind.subkeys.forEach((sk,i)=>{
+      const subHist=[...(HIST[sk]||[])].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const subObj=getObj(sk,anio);
+      const subInd={key:sk,label:ind.sublabels[i],unit:'mmHg',decimals:0};
+      rRenderChartSpot(subInd,subObj,subHist,'r-sub-canvas-'+sk);
     });
-  } else if(ss) {
-    ss.innerHTML='';
   }
 }
 
