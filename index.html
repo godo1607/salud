@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 11:35</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 11:38</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1413,6 +1413,10 @@ function processRows(rows,data){
   HIST={};
   const allKeys=['fc','sueno','sueno_prof','sueno_rem','peso','grasa','musculo','pasos','vo2','ta','ta_sist','ta_diast'];
   allKeys.forEach(k=>{HIST[k]=[];});
+  // Debug TA
+  const taRows = rows.filter(r=>r['ta_sist']&&parseFloat(r['ta_sist'])>0);
+  console.log('Filas con ta_sist:', taRows.length, taRows.slice(0,3).map(r=>({fecha:r['fecha'],ta_sist:r['ta_sist'],ta_diast:r['ta_diast']})));
+
   rows.forEach(r=>{
     const fechaRaw=String(r['fecha']||'');
     const isoMatch=fechaRaw.match(/(\d{4})-(\d{2})-(\d{2})/);
