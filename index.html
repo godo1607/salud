@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:00</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:09</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1824,6 +1824,12 @@ function renderDailyDetail(ind,anio,obj,o){
   const fmt=(v,d)=>v!==null?(d===0?Math.round(v):v.toFixed(d))+' '+ind.unit:'—';
 
   document.getElementById('r-lbl-v1').textContent='Ayer';
+  const lbl2d=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');
+  if(lbl2d)lbl2d.textContent='Media 7d';
+  const lbl3d=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');
+  if(lbl3d)lbl3d.textContent='Media 30d';
+  const lbl4d=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');
+  if(lbl4d)lbl4d.textContent='Media 2026';
   document.getElementById('r-val-v1').textContent=fmt(stats.last,ind.decimals);
   document.getElementById('r-val-v2').textContent=fmt(stats.avg7,ind.decimals);
   document.getElementById('r-val-v3').textContent=fmt(stats.avg30,ind.decimals);
@@ -1909,20 +1915,22 @@ function renderSpotDetail(ind,anio,obj,o){
     historia = [...hist].sort((a,b)=>a.fecha.localeCompare(b.fecha));
   }
 
-  document.getElementById('r-lbl-v1').textContent='Último valor';
+  const vals=(HIST[ind.key]||[]).map(e=>e.val).filter(v=>v>0);
+  const minVal=vals.length>0?Math.min(...vals):null;
+  const maxVal=vals.length>0?Math.max(...vals):null;
+
+  document.getElementById('r-lbl-v1').textContent='Último';
   document.getElementById('r-val-v1').textContent=lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—';
   document.getElementById('r-val-v2').textContent=prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—';
-  document.getElementById('r-val-v3').textContent='—';
-  document.getElementById('r-val-v4').textContent='—';
+  document.getElementById('r-val-v3').textContent=minVal!==null?minVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  document.getElementById('r-val-v4').textContent=maxVal!==null?maxVal.toFixed(ind.decimals)+' '+ind.unit:'—';
 
-  // Labels para stats
-  document.getElementById('r-lbl-v1').textContent='Último';
   const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');
   if(lbl2)lbl2.textContent='Anterior';
   const lbl3=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');
-  if(lbl3)lbl3.textContent='—';
+  if(lbl3)lbl3.textContent='Mínimo';
   const lbl4=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');
-  if(lbl4)lbl4.textContent='—';
+  if(lbl4)lbl4.textContent='Máximo';
 
   // Objetivo
   const objBox=document.getElementById('r-obj-box');
