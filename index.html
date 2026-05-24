@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:09</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 21:18</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1723,7 +1723,8 @@ function renderRGrid(gridId,inds){
     let lastFechaKey = ind.key; // clave para buscar la última fecha
     if(ind.key==='vo2'&&(val===null)&&LAST_VO2.val){val=LAST_VO2.val;}
     const color=valColor(ind.key,val);
-    const tr=trendIcon(ind.key,HIST[ind.key]);
+    let tr=trendIcon(ind.key,HIST[ind.key]);
+    if(ind.spot&&!ind.manual){const _h=[...(HIST[ind.key]||[])].sort((a,b)=>b.fecha.localeCompare(a.fecha));if(_h.length>=2){const _d=_h[0].val-_h[1].val;const _o=OBJ_PUNTOS[ind.key];if(_o){const _imp=_o.dir==='lower'?_d<0:_d>0;const _abs=Math.abs(_d).toFixed(0);if(Math.abs(_d)<1)tr={icon:'→ estable',cls:'r-trend-flat'};else if(_imp)tr={icon:(_o.dir==='lower'?'↓':'↑')+' '+_abs+' vs anterior',cls:'r-trend-good'};else tr={icon:(_o.dir==='lower'?'↑':'↓')+' '+_abs+' vs anterior',cls:'r-trend-bad'};}}}
     let displayVal,footerRight='';
 
     // Obtener última fecha del indicador
@@ -1920,10 +1921,30 @@ function renderSpotDetail(ind,anio,obj,o){
   const maxVal=vals.length>0?Math.max(...vals):null;
 
   document.getElementById('r-lbl-v1').textContent='Último';
-  document.getElementById('r-val-v1').textContent=lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—';
-  document.getElementById('r-val-v2').textContent=prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—';
-  document.getElementById('r-val-v3').textContent=minVal!==null?minVal.toFixed(ind.decimals)+' '+ind.unit:'—';
-  document.getElementById('r-val-v4').textContent=maxVal!==null?maxVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  const _diast0=(HIST['ta_diast']||[]).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const _d0=_diast0.length>0?_diast0[0].val:null;
+  document.getElementById('r-val-v1').textContent=ind.key==='ta'&&lastVal!==null&&_d0?Math.round(lastVal)+'/'+Math.round(_d0)+' mmHg':(lastVal!==null?lastVal.toFixed(ind.decimals)+' '+ind.unit:'—');
+  const _diast1=(HIST['ta_diast']||[]).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const _d1=_diast1.length>1?_diast1[1].val:null;
+  document.getElementById('r-val-v2').textContent=ind.key==='ta'&&prevEntry&&_d1?Math.round(prevEntry.val)+'/'+Math.round(_d1)+' mmHg ('+prevEntry.fecha+')':(prevEntry?prevEntry.val.toFixed(ind.decimals)+' '+ind.unit+' ('+prevEntry.fecha+')':'—');
+  if(ind.key==='ta'){
+    const _allTA=(HIST['ta']||[]).filter(e=>e.val>0).sort((a,b)=>a.val-b.val);
+    const _allTAD=(HIST['ta_diast']||[]);
+    const _minE=_allTA.length>0?_allTA[0]:null;
+    const _minD=_minE?(_allTAD.find(e=>e.fecha===_minE.fecha)||null):null;
+    document.getElementById('r-val-v3').textContent=_minE?Math.round(_minE.val)+(_minD?'/'+Math.round(_minD.val):'')+' mmHg ('+_minE.fecha+')':'—';
+  } else {
+    document.getElementById('r-val-v3').textContent=minVal!==null?minVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  }
+  if(ind.key==='ta'){
+    const _allTA2=(HIST['ta']||[]).filter(e=>e.val>0).sort((a,b)=>b.val-a.val);
+    const _allTAD2=(HIST['ta_diast']||[]);
+    const _maxE=_allTA2.length>0?_allTA2[0]:null;
+    const _maxD=_maxE?(_allTAD2.find(e=>e.fecha===_maxE.fecha)||null):null;
+    document.getElementById('r-val-v4').textContent=_maxE?Math.round(_maxE.val)+(_maxD?'/'+Math.round(_maxD.val):'')+' mmHg ('+_maxE.fecha+')':'—';
+  } else {
+    document.getElementById('r-val-v4').textContent=maxVal!==null?maxVal.toFixed(ind.decimals)+' '+ind.unit:'—';
+  }
 
   const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');
   if(lbl2)lbl2.textContent='Anterior';
@@ -1942,7 +1963,8 @@ function renderSpotDetail(ind,anio,obj,o){
   }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
 
   // Gráfico histórico completo (todas las mediciones)
-  document.getElementById('r-chart-year').textContent='histórico';
+  document.getElementById('r-chart-year').textContent='2026';
+  document.querySelector('.r-chart-lbl').textContent='Historial de mediciones ';
   const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
   rRenderChartSpot(ind,obj,series,'r-trend-canvas');
 
