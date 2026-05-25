@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v24/05/2026 22:41</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v25/05/2026 20:39</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -2013,7 +2013,7 @@ function renderSpotDetail(ind,anio,obj,o){
   // Título y gráfico principal — siempre restaurar el span#r-chart-year para no romper renderDailyDetail posterior
   const chartLbl=document.querySelector('#r-detail-panel .r-chart-lbl');
   if(ind.key==='ta'){
-    if(chartLbl)chartLbl.innerHTML='Sistólica &middot; último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' &middot; anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')')+'<span id="r-chart-year" style="display:none">'+anio+'</span>';
+    if(chartLbl)chartLbl.innerHTML='Sistólica &middot; último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' &middot; anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')':'')+'<span id="r-chart-year" style="display:none">'+anio+'</span>';
   } else {
     if(chartLbl)chartLbl.innerHTML='Historial de mediciones <span id="r-chart-year">'+anio+'</span>';
   }
