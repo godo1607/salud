@@ -1249,7 +1249,7 @@ const INDICADORES={
     {key:'fc',     label:'FC en reposo',   unit:'bpm',  decimals:0, perc:'Top 15%', percObj:{2027:'Top 10%',2032:'Top 5%'}},
     {key:'sueno',  label:'Sueño',          unit:'h',    decimals:2, perc:'Top 25%', percObj:{2027:'Top 15%'}, subkeys:['sueno_prof','sueno_rem'], sublabels:['Profundo','REM']},
     {key:'peso',   label:'Peso',           unit:'kg',   decimals:1, perc:'IMC', percObj:{}},
-    {key:'grasa',  label:'Grasa corporal', unit:'%',    decimals:1, perc:'Top 30%', percObj:{2027:'Top 20%'}},
+    {key:'grasa',  label:'Grasa corporal', unit:'kg',   decimals:1, perc:'Top 30%', percObj:{2027:'Top 20%'}},
     {key:'musculo',label:'Masa muscular',  unit:'kg',   decimals:1, perc:'Top 20%', percObj:{2031:'Top 15%'}},
     {key:'pasos',  label:'Pasos',          unit:'pasos',decimals:0, perc:'Media',   percObj:{2027:'Top 25%'}},
   ],
@@ -1744,6 +1744,16 @@ function renderRGrid(gridId,inds){
       displayVal=`<span style="color:${color}">${Math.round(val).toLocaleString('es-ES')}</span>`;
       const pct=Math.min(100,Math.round(val/10000*100));
       footerRight=`<span style="font-size:10px;color:${color};font-weight:600">${pct}% de 10k</span>`;
+    } else if(ind.key==='grasa'&&val!==null){
+      const pesoAct=calcStats('peso').last;
+      const grasaKg=pesoAct?val*pesoAct/100:null;
+      displayVal=`<span style="color:${color}">${grasaKg!==null?grasaKg.toFixed(1):'—'}</span>`;
+      footerRight=`<span style="font-size:10px;color:#64748B">${val.toFixed(1)}%</span>`;
+    } else if(ind.key==='musculo'&&val!==null){
+      const pesoAct=calcStats('peso').last;
+      const musculoPct=pesoAct?val/pesoAct*100:null;
+      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
+      footerRight=`<span style="font-size:10px;color:#64748B">${musculoPct!==null?musculoPct.toFixed(1)+'%':'—'}</span>`;
     } else if(ind.key==='peso'&&val!==null){
       const imc=val/(ALTURA_M*ALTURA_M);
       displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
@@ -1818,6 +1828,10 @@ function rSelectCard(key){
 }
 
 function renderDailyDetail(ind,anio,obj,o){
+  // Limpiar subcanvas de Chart.js antes de borrar sus elementos del DOM
+  Object.keys(chartInstances).filter(function(k){return k.startsWith('r-sub-canvas-');}).forEach(function(k){
+    chartInstances[k].destroy();delete chartInstances[k];
+  });
   const stats=calcStats(ind.key);
   const fmt=(v,d)=>v!==null?(d===0?Math.round(v):v.toFixed(d))+' '+ind.unit:'—';
 
@@ -1839,19 +1853,53 @@ function renderDailyDetail(ind,anio,obj,o){
     document.getElementById('r-val-v1').textContent=stats.last.toFixed(1)+' kg · IMC '+imc;
   }
 
-  // Objetivo
+  // Para grasa: datos en %, mostrar kg (calculado con peso) + % entre paréntesis
+  if(ind.key==='grasa'){
+    const pesoStats=calcStats('peso');
+    const fmtGrasa=(pct,pesoVal)=>{
+      if(pct===null)return'—';
+      const kg=pesoVal?( pct*pesoVal/100).toFixed(1)+' kg':null;
+      return (kg?kg+' ':'')+pct.toFixed(1)+'%';
+    };
+    document.getElementById('r-val-v1').innerHTML=fmtGrasa(stats.last,pesoStats.last);
+    document.getElementById('r-val-v2').innerHTML=fmtGrasa(stats.avg7,pesoStats.avg7||pesoStats.last);
+    document.getElementById('r-val-v3').innerHTML=fmtGrasa(stats.avg30,pesoStats.avg30||pesoStats.last);
+    document.getElementById('r-val-v4').innerHTML=fmtGrasa(stats.avgYear,pesoStats.avgYear||pesoStats.last);
+  }
+
+  // Para musculo: datos en kg, mostrar kg + % entre paréntesis
+  if(ind.key==='musculo'){
+    const pesoStats=calcStats('peso');
+    const fmtMusculo=(kg,pesoVal)=>{
+      if(kg===null)return'—';
+      const pct=pesoVal?(kg/pesoVal*100).toFixed(1)+'%':null;
+      return kg.toFixed(1)+' kg'+(pct?' '+pct:'');
+    };
+    document.getElementById('r-val-v1').innerHTML=fmtMusculo(stats.last,pesoStats.last);
+    document.getElementById('r-val-v2').innerHTML=fmtMusculo(stats.avg7,pesoStats.avg7||pesoStats.last);
+    document.getElementById('r-val-v3').innerHTML=fmtMusculo(stats.avg30,pesoStats.avg30||pesoStats.last);
+    document.getElementById('r-val-v4').innerHTML=fmtMusculo(stats.avgYear,pesoStats.avgYear||pesoStats.last);
+  }
+
+  // Objetivo — grasa compara en % (unidad de los datos), resto usa ind.unit
   const objBox=document.getElementById('r-obj-box');
+  const objUnit=ind.key==='grasa'?'%':ind.unit;
   if(stats.last!==null&&obj!==null){
     const ok=o.dir==='lower'?stats.last<=obj:stats.last>=obj;
     const sign=o.dir==='lower'?'≤':'≥';
-    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${ind.unit})`;}
-    else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${ind.unit} ${dir} del objetivo ${anio} (${sign}${obj} ${ind.unit})`;}
+    if(ok){objBox.className='r-obj-box r-obj-ok';objBox.innerHTML=`✓ Objetivo ${anio} cumplido (${sign}${obj} ${objUnit})`;}
+    else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=`${diff} ${objUnit} ${dir} del objetivo ${anio} (${sign}${obj} ${objUnit})`;}
   }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
 
-  document.getElementById('r-chart-year').textContent=anio;
+  // Restaurar label del gráfico (puede haber sido sobreescrito por renderSpotDetail de TA)
+  const chartLblD=document.querySelector('#r-detail-panel .r-chart-lbl');
+  if(chartLblD)chartLblD.innerHTML='Últimos 15 días vs objetivo <span id="r-chart-year">'+anio+'</span>';
+  const chartYearD=document.getElementById('r-chart-year');
+  if(chartYearD)chartYearD.textContent=anio;
 
-  // Gráfico principal
-  rRenderChart(ind.key,ind,obj,stats.series15,'r-trend-canvas');
+  // Gráfico principal — grasa: datos en %, pasar unidad correcta al gráfico
+  const indForChart=ind.key==='grasa'?Object.assign({},ind,{unit:'%'}):ind;
+  rRenderChart(ind.key,indForChart,obj,stats.series15,'r-trend-canvas');
 
   // Si tiene subkeys (sueño → profundo + REM), mostrar sección adicional
   const subSection=document.getElementById('r-sub-section');
@@ -1898,6 +1946,10 @@ function renderDailyDetail(ind,anio,obj,o){
 function renderSpotDetail(ind,anio,obj,o){
   // Limpiar subsección siempre al inicio
   const ss=document.getElementById('r-sub-section');
+  // Limpiar subcanvas de Chart.js antes de borrar sus elementos del DOM
+  Object.keys(chartInstances).filter(function(k){return k.startsWith('r-sub-canvas-');}).forEach(function(k){
+    chartInstances[k].destroy();delete chartInstances[k];
+  });
   if(ss)ss.innerHTML='';
 
   // Obtener valores
@@ -1958,15 +2010,15 @@ function renderSpotDetail(ind,anio,obj,o){
     else{const diff=Math.abs(lastVal-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(lastVal-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=diff+' '+ind.unit+' '+dir+' del objetivo '+anio+' ('+sign+obj+' '+ind.unit+')';}
   }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
 
-  // Título y gráfico principal
+  // Título y gráfico principal — siempre restaurar el span#r-chart-year para no romper renderDailyDetail posterior
   const chartLbl=document.querySelector('#r-detail-panel .r-chart-lbl');
-  const chartYear=document.getElementById('r-chart-year');
   if(ind.key==='ta'){
-    if(chartLbl)chartLbl.innerHTML='Sistólica &middot; último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' &middot; anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')':'');
+    if(chartLbl)chartLbl.innerHTML='Sistólica &middot; último: '+(lastVal!==null?Math.round(lastVal)+' mmHg':'—')+(prevEntry?' &middot; anterior: '+Math.round(prevEntry.val)+' mmHg ('+prevEntry.fecha+')')+'<span id="r-chart-year" style="display:none">'+anio+'</span>';
   } else {
     if(chartLbl)chartLbl.innerHTML='Historial de mediciones <span id="r-chart-year">'+anio+'</span>';
-    if(chartYear)chartYear.textContent=anio;
   }
+  const chartYear=document.getElementById('r-chart-year');
+  if(chartYear)chartYear.textContent=anio;
   const series=historia.map(h=>({fecha:h.fecha,val:h.val}));
   rRenderChartSpot(ind,obj,series,'r-trend-canvas');
 
@@ -1992,8 +2044,14 @@ function renderSpotDetail(ind,anio,obj,o){
 }
 
 function rCloseDetail(){
+  ['r-trend-canvas'].forEach(function(id){
+    if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}
+  });
+  Object.keys(chartInstances).filter(function(k){return k.startsWith('r-sub-canvas-');}).forEach(function(k){
+    chartInstances[k].destroy();delete chartInstances[k];
+  });
   document.getElementById('r-detail-panel').classList.remove('r-detail-visible');
-  document.querySelectorAll('.r-card').forEach(c=>c.classList.remove('r-selected'));
+  document.querySelectorAll('.r-card').forEach(function(c){c.classList.remove('r-selected');});
   rSelectedKey=null;
 }
 
