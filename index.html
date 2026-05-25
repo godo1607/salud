@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v25/05/2026 20:46</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v25/05/2026 20:56</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1249,7 +1249,7 @@ const INDICADORES={
     {key:'fc',     label:'FC en reposo',   unit:'bpm',  decimals:0, perc:'Top 15%', percObj:{2027:'Top 10%',2032:'Top 5%'}},
     {key:'sueno',  label:'Sueño',          unit:'h',    decimals:2, perc:'Top 25%', percObj:{2027:'Top 15%'}, subkeys:['sueno_prof','sueno_rem'], sublabels:['Profundo','REM']},
     {key:'peso',   label:'Peso',           unit:'kg',   decimals:1, perc:'IMC', percObj:{}},
-    {key:'grasa',  label:'Grasa corporal', unit:'kg',   decimals:1, perc:'Top 30%', percObj:{2027:'Top 20%'}},
+    {key:'grasa',  label:'Grasa corporal', unit:'%',   decimals:1, perc:'Top 30%', percObj:{2027:'Top 20%'}},
     {key:'musculo',label:'Masa muscular',  unit:'kg',   decimals:1, perc:'Top 20%', percObj:{2031:'Top 15%'}},
     {key:'pasos',  label:'Pasos',          unit:'pasos',decimals:0, perc:'Media',   percObj:{2027:'Top 25%'}},
   ],
@@ -1747,19 +1747,11 @@ function renderRGrid(gridId,inds){
     } else if(ind.key==='grasa'&&val!==null){
       const pesoAct=calcStats('peso').last;
       const grasaKg=pesoAct?(val*pesoAct/100):null;
-      // Color del % basado en tendencia de 7d del % (bajar es bueno)
-      const trGrasa=trendIcon('grasa',HIST['grasa']);
-      const pctColor=trGrasa.cls==='r-trend-good'?'#15803D':trGrasa.cls==='r-trend-bad'?'#DC2626':'#B45309';
-      const pctArrow=trGrasa.cls==='r-trend-good'?'↓':trGrasa.cls==='r-trend-bad'?'↑':'→';
-      displayVal=`<span style="color:${color}">${grasaKg!==null?grasaKg.toFixed(1):'—'}</span><span style="font-size:13px;font-weight:600;color:${pctColor};margin-left:6px">${val.toFixed(1)}%${pctArrow}</span>`;
+      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:11px;font-weight:500;color:#94A3B8;margin-left:5px">${grasaKg!==null?grasaKg.toFixed(1)+' kg':'—'}</span>`;
     } else if(ind.key==='musculo'&&val!==null){
       const pesoAct=calcStats('peso').last;
       const musculoPct=pesoAct?(val/pesoAct*100):null;
-      // Color del % basado en tendencia de 7d del % (subir es bueno → calcular en base a peso)
-      const trMusculo=trendIcon('musculo',HIST['musculo']);
-      const pctColor=trMusculo.cls==='r-trend-good'?'#15803D':trMusculo.cls==='r-trend-bad'?'#DC2626':'#B45309';
-      const pctArrow=trMusculo.cls==='r-trend-good'?'↑':trMusculo.cls==='r-trend-bad'?'↓':'→';
-      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:13px;font-weight:600;color:${pctColor};margin-left:6px">${musculoPct!==null?musculoPct.toFixed(1)+'%':'—'}${pctArrow}</span>`;
+      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:11px;font-weight:500;color:#94A3B8;margin-left:5px">${musculoPct!==null?musculoPct.toFixed(1)+'%':'—'}</span>`;
     } else if(ind.key==='peso'&&val!==null){
       const imc=val/(ALTURA_M*ALTURA_M);
       displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
@@ -1859,18 +1851,35 @@ function renderDailyDetail(ind,anio,obj,o){
     document.getElementById('r-val-v1').textContent=stats.last.toFixed(1)+' kg · IMC '+imc;
   }
 
-  // Grasa: cajas en kg · % / Músculo: cajas en kg · %
+  // Grasa: cajas en % (principal) · kg (contexto)
   if(ind.key==='grasa'){
     const ps=calcStats('peso');
-    const f=(pct,p)=>{if(pct===null)return'—';const kg=p?(pct*p/100).toFixed(1)+' kg':null;return(kg?'<strong>'+kg+'</strong> · ':'')+pct.toFixed(1)+'%';};
+    const f=(pct,p)=>{
+      if(pct===null)return'—';
+      const kg=p?(pct*p/100).toFixed(1):null;
+      return pct.toFixed(1)+'%'+(kg?' <span style="font-size:10px;color:#94A3B8">('+kg+' kg)</span>':'');
+    };
+    document.getElementById('r-lbl-v1').textContent='Ayer';
+    const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');if(lbl2)lbl2.textContent='Media 7d';
+    const lbl3=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');if(lbl3)lbl3.textContent='Media 30d';
+    const lbl4=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');if(lbl4)lbl4.textContent='Media 2026';
     document.getElementById('r-val-v1').innerHTML=f(stats.last,ps.last);
     document.getElementById('r-val-v2').innerHTML=f(stats.avg7,ps.avg7||ps.last);
     document.getElementById('r-val-v3').innerHTML=f(stats.avg30,ps.avg30||ps.last);
     document.getElementById('r-val-v4').innerHTML=f(stats.avgYear,ps.avgYear||ps.last);
   }
+  // Músculo: cajas en kg (principal) · % (contexto)
   if(ind.key==='musculo'){
     const ps=calcStats('peso');
-    const f=(kg,p)=>{if(kg===null)return'—';const pct=p?(kg/p*100).toFixed(1)+'%':null;return'<strong>'+kg.toFixed(1)+' kg</strong>'+(pct?' · '+pct:'');};
+    const f=(kg,p)=>{
+      if(kg===null)return'—';
+      const pct=p?(kg/p*100).toFixed(1):null;
+      return kg.toFixed(1)+' kg'+(pct?' <span style="font-size:10px;color:#94A3B8">('+pct+'%)</span>':'');
+    };
+    document.getElementById('r-lbl-v1').textContent='Ayer';
+    const lbl2=document.querySelector('#r-detail-panel .r-stat:nth-child(2) .r-stat-lbl');if(lbl2)lbl2.textContent='Media 7d';
+    const lbl3=document.querySelector('#r-detail-panel .r-stat:nth-child(3) .r-stat-lbl');if(lbl3)lbl3.textContent='Media 30d';
+    const lbl4=document.querySelector('#r-detail-panel .r-stat:nth-child(4) .r-stat-lbl');if(lbl4)lbl4.textContent='Media 2026';
     document.getElementById('r-val-v1').innerHTML=f(stats.last,ps.last);
     document.getElementById('r-val-v2').innerHTML=f(stats.avg7,ps.avg7||ps.last);
     document.getElementById('r-val-v3').innerHTML=f(stats.avg30,ps.avg30||ps.last);
@@ -1887,17 +1896,23 @@ function renderDailyDetail(ind,anio,obj,o){
     else{const diff=Math.abs(stats.last-obj).toFixed(ind.decimals);const dir=o.dir==='lower'?'por encima':'por debajo';const cls=(Math.abs(stats.last-obj)/obj<0.15)?'r-obj-warn':'r-obj-bad';objBox.className='r-obj-box '+cls;objBox.innerHTML=diff+' '+objUnit+' '+dir+' del objetivo '+anio+' ('+sign+obj+' '+objUnit+')';}
   }else{objBox.className='r-obj-box r-obj-warn';objBox.innerHTML='Sin datos suficientes';}
 
-  // Restaurar label del gráfico
+  // Label gráfico principal con título descriptivo
   const chartLblD=document.querySelector('#r-detail-panel .r-chart-lbl');
-  if(chartLblD)chartLblD.innerHTML='Últimos 15 días vs objetivo <span id="r-chart-year">'+anio+'</span>';
-  const chartYearD=document.getElementById('r-chart-year');
-  if(chartYearD)chartYearD.textContent=anio;
+  if(ind.key==='grasa'){
+    if(chartLblD)chartLblD.innerHTML='% grasa corporal · últimos 15 días <span id="r-chart-year" style="display:none">'+anio+'</span>';
+  } else if(ind.key==='musculo'){
+    if(chartLblD)chartLblD.innerHTML='Masa muscular (kg) · últimos 15 días <span id="r-chart-year" style="display:none">'+anio+'</span>';
+  } else {
+    if(chartLblD)chartLblD.innerHTML='Últimos 15 días vs objetivo <span id="r-chart-year">'+anio+'</span>';
+    const chartYearD=document.getElementById('r-chart-year');
+    if(chartYearD)chartYearD.textContent=anio;
+  }
 
   // Gráfico principal — grasa en %, músculo en kg
   const indForChart=ind.key==='grasa'?Object.assign({},ind,{unit:'%'}):ind;
   rRenderChart(ind.key,indForChart,obj,stats.series15,'r-trend-canvas');
 
-  // Sección adicional: grasa → gráfico kg / músculo → gráfico %
+  // Sección adicional: grasa → kg calculado / músculo → % calculado
   const subSection=document.getElementById('r-sub-section');
   Object.keys(chartInstances).filter(function(k){return k.startsWith('r-sub-canvas-');}).forEach(function(k){chartInstances[k].destroy();delete chartInstances[k];});
   if(ind.key==='grasa'&&subSection){
@@ -1905,16 +1920,22 @@ function renderDailyDetail(ind,anio,obj,o){
     const pesoHist=HIST['peso']||[];
     const pesoMap={};pesoHist.forEach(function(e){pesoMap[e.fecha]=e.val;});
     const seriesKg=(stats.series15||[]).map(function(e){const p=pesoMap[e.fecha]||ps.last;return p?{fecha:e.fecha,val:parseFloat((e.val*p/100).toFixed(1))}:null;}).filter(Boolean);
-    subSection.innerHTML='<div style="margin-top:14px;padding-top:10px;border-top:0.5px solid #E2E8F0"><p class="r-chart-lbl" style="margin:0 0 6px">Últimos 15 días · en kg</p><div style="position:relative;height:90px"><canvas id="r-sub-canvas-grasa_kg"></canvas></div></div>';
     const objKg=ps.last&&obj?(obj*ps.last/100):null;
-    rRenderChart('grasa',{key:'grasa',label:'Grasa kg',unit:'kg',decimals:1},objKg,seriesKg,'r-sub-canvas-grasa_kg');
+    subSection.innerHTML='<div style="margin-top:14px;padding-top:10px;border-top:0.5px solid #E2E8F0">'+
+      '<p class="r-chart-lbl" style="margin:0 0 4px">Grasa en kg · calculado como % × peso diario</p>'+
+      '<p style="font-size:10px;color:#94A3B8;margin:0 0 8px">Varía con el peso aunque el % no cambie</p>'+
+      '<div style="position:relative;height:90px"><canvas id="r-sub-canvas-grasa_kg"></canvas></div></div>';
+    rRenderChart('grasa',{key:'grasa',label:'Grasa',unit:'kg',decimals:1},objKg,seriesKg,'r-sub-canvas-grasa_kg');
   } else if(ind.key==='musculo'&&subSection){
     const ps=calcStats('peso');
     const pesoHist=HIST['peso']||[];
     const pesoMap={};pesoHist.forEach(function(e){pesoMap[e.fecha]=e.val;});
     const seriesPct=(stats.series15||[]).map(function(e){const p=pesoMap[e.fecha]||ps.last;return p?{fecha:e.fecha,val:parseFloat((e.val/p*100).toFixed(1))}:null;}).filter(Boolean);
-    subSection.innerHTML='<div style="margin-top:14px;padding-top:10px;border-top:0.5px solid #E2E8F0"><p class="r-chart-lbl" style="margin:0 0 6px">Últimos 15 días · en %</p><div style="position:relative;height:90px"><canvas id="r-sub-canvas-musculo_pct"></canvas></div></div>';
-    rRenderChart('musculo',{key:'musculo',label:'Músculo %',unit:'%',decimals:1},null,seriesPct,'r-sub-canvas-musculo_pct');
+    subSection.innerHTML='<div style="margin-top:14px;padding-top:10px;border-top:0.5px solid #E2E8F0">'+
+      '<p class="r-chart-lbl" style="margin:0 0 4px">Músculo en % · calculado como kg / peso diario</p>'+
+      '<p style="font-size:10px;color:#94A3B8;margin:0 0 8px">Sube si aumentas músculo o si baja el peso total</p>'+
+      '<div style="position:relative;height:90px"><canvas id="r-sub-canvas-musculo_pct"></canvas></div></div>';
+    rRenderChart('musculo',{key:'musculo',label:'Músculo',unit:'%',decimals:1},null,seriesPct,'r-sub-canvas-musculo_pct');
   } else if(ind.subkeys&&ind.subkeys.length>0){
     if(!subSection){
       const perc=document.querySelector('.r-perc-row');
