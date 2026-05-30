@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:15</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:28</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1749,17 +1749,13 @@ function renderRGrid(gridId,inds){
       const pct=Math.min(100,Math.round(val/10000*100));
       footerRight=`<span style="font-size:10px;color:${color};font-weight:600">${pct}% de 10k</span>`;
     } else if((ind.key==='grasa'||ind.key==='musculo')&&val!==null){
-      // Card especial de dos columnas — se retorna directamente
       const histPeso=HIST['peso']||[];
       const pesoMap={};histPeso.forEach(function(e){pesoMap[e.fecha]=e.val;});
       const pesoAct=calcStats('peso').last;
       const anioCard=new Date().getFullYear();
       const objCard=getObj(ind.key,anioCard);
-      const oCard=OBJ_PUNTOS[ind.key];
 
-      // Calcular tendencia 7d para una serie de valores
       function trendOf(vals,goodDir){
-        // vals ordenados desc por fecha, últimos 14
         if(vals.length<2)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
         const rec=vals.slice(0,Math.min(7,vals.length));
         const old=vals.slice(Math.min(7,vals.length),Math.min(14,vals.length));
@@ -1767,66 +1763,60 @@ function renderRGrid(gridId,inds){
         const avgRec=rec.reduce(function(s,v){return s+v;},0)/rec.length;
         const avgOld=old.reduce(function(s,v){return s+v;},0)/old.length;
         const d=avgRec-avgOld;
-        const threshold=avgOld*0.005; // 0.5% de cambio mínimo
-        if(Math.abs(d)<threshold)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
-        const going_good=(goodDir==='lower'&&d<0)||(goodDir==='higher'&&d>0);
-        return{
-          icon:d<0?'↓':'↑',
-          color:going_good?'#15803D':'#DC2626',
-          cls:going_good?'r-trend-good':'r-trend-bad'
-        };
+        if(Math.abs(d)<avgOld*0.005)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
+        const good=(goodDir==='lower'&&d<0)||(goodDir==='higher'&&d>0);
+        return{icon:d<0?'↓':'↑',color:good?'#15803D':'#DC2626',cls:good?'r-trend-good':'r-trend-bad'};
       }
 
+      const histSorted=[...(HIST[ind.key]||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+
       if(ind.key==='grasa'){
-        // Columna izq: % vs objetivo / Columna der: kg con tendencia kg
-        const hist=[...( HIST['grasa']||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
-        const pctVals=hist.slice(0,14).map(function(e){return e.val;});
-        const kgVals=hist.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val*p/100):null;}).filter(function(v){return v!==null;});
+        const pctVals=histSorted.slice(0,14).map(function(e){return e.val;});
+        const kgVals=histSorted.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val*p/100):null;}).filter(function(v){return v!==null;});
         const trPct=trendOf(pctVals,'lower');
         const trKg=trendOf(kgVals,'lower');
         const grasaKg=pesoAct?(val*pesoAct/100):null;
         const pctDiff=objCard!==null?(val-objCard).toFixed(1):null;
-        const objTxt=pctDiff!==null?(parseFloat(pctDiff)<=0?'✓ obj ≤'+objCard+'%':('+'+pctDiff+'% sobre obj ≤'+objCard+'%')):'';        return`<div class="r-card" id="rcard-grasa" onclick="rSelectCard('grasa')">
+        const objTxt=pctDiff!==null?(parseFloat(pctDiff)<=0?'✓ obj ≤'+objCard+'%':('+'+pctDiff+'% sobre obj')):null;
+        return`<div class="r-card" id="rcard-grasa" onclick="rSelectCard('grasa')">
           <p class="r-card-name">Grasa corporal</p>
           <div style="display:flex;align-items:stretch;margin-top:4px">
-            <div style="flex:1">
+            <div style="flex:1;background:#EFF6FF;border-radius:6px;padding:6px 8px">
               <div style="font-size:22px;font-weight:700;line-height:1"><span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">%</span></div>
-              <div style="margin-top:4px;font-size:10px" class="${trPct.cls}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable %':trPct.icon==='↓'?'bajando %':'subiendo %'}</div>
+              <div style="margin-top:4px;font-size:10px;color:${trPct.color}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable':trPct.icon==='↓'?'bajando':'subiendo'}</div>
               ${objTxt?`<div style="font-size:9px;margin-top:2px;color:${parseFloat(pctDiff)<=0?'#15803D':'#D97706'}">${objTxt}</div>`:''}
             </div>
-            <div style="width:1px;background:#E2E8F0;margin:0 10px"></div>
-            <div style="flex:1">
-              <div style="font-size:18px;font-weight:700;line-height:1"><span style="color:${trKg.color}">${grasaKg!==null?grasaKg.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">kg</span></div>
-              <div style="margin-top:4px;font-size:10px" class="${trKg.cls}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable kg':trKg.icon==='↓'?'bajando kg':'subiendo kg'}</div>
-              <div style="font-size:9px;color:#94A3B8;margin-top:2px">${fechaDisplay}</div>
+            <div style="width:1px;background:#E2E8F0;margin:0 8px;flex-shrink:0"></div>
+            <div style="flex:1;padding:6px 4px">
+              <div style="font-size:15px;font-weight:700;line-height:1"><span style="color:${trKg.color}">${grasaKg!==null?grasaKg.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">kg</span></div>
+              <div style="margin-top:4px;font-size:10px;color:${trKg.color}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable':trKg.icon==='↓'?'bajando':'subiendo'}</div>
             </div>
           </div>
+          <div style="font-size:9px;color:#94A3B8;margin-top:6px;text-align:right">${fechaDisplay}</div>
         </div>`;
       } else {
-        // musculo: Columna izq: kg vs objetivo / Columna der: % con tendencia %
-        const hist=[...(HIST['musculo']||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
-        const kgVals=hist.slice(0,14).map(function(e){return e.val;});
-        const pctVals=hist.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val/p*100):null;}).filter(function(v){return v!==null;});
+        const kgVals=histSorted.slice(0,14).map(function(e){return e.val;});
+        const pctVals=histSorted.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val/p*100):null;}).filter(function(v){return v!==null;});
         const trKg=trendOf(kgVals,'higher');
         const trPct=trendOf(pctVals,'higher');
         const musculoPct=pesoAct?(val/pesoAct*100):null;
         const kgDiff=objCard!==null?(val-objCard).toFixed(1):null;
-        const objTxt=kgDiff!==null?(parseFloat(kgDiff)>=0?'✓ obj ≥'+objCard+' kg':((kgDiff)+' kg bajo obj ≥'+objCard+' kg')):'';
+        const objTxt=kgDiff!==null?(parseFloat(kgDiff)>=0?'✓ obj ≥'+objCard+' kg':(kgDiff+' kg bajo obj')):null;
         return`<div class="r-card" id="rcard-musculo" onclick="rSelectCard('musculo')">
           <p class="r-card-name">Masa muscular</p>
           <div style="display:flex;align-items:stretch;margin-top:4px">
-            <div style="flex:1">
+            <div style="flex:1;background:#EFF6FF;border-radius:6px;padding:6px 8px">
               <div style="font-size:22px;font-weight:700;line-height:1"><span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">kg</span></div>
-              <div style="margin-top:4px;font-size:10px" class="${trKg.cls}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable kg':trKg.icon==='↑'?'ganando kg':'perdiendo kg'}</div>
+              <div style="margin-top:4px;font-size:10px;color:${trKg.color}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable':trKg.icon==='↑'?'subiendo':'bajando'}</div>
               ${objTxt?`<div style="font-size:9px;margin-top:2px;color:${parseFloat(kgDiff)>=0?'#15803D':'#D97706'}">${objTxt}</div>`:''}
             </div>
-            <div style="width:1px;background:#E2E8F0;margin:0 10px"></div>
-            <div style="flex:1">
-              <div style="font-size:18px;font-weight:700;line-height:1"><span style="color:${trPct.color}">${musculoPct!==null?musculoPct.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">%</span></div>
-              <div style="margin-top:4px;font-size:10px" class="${trPct.cls}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable %':trPct.icon==='↑'?'mejora composición':'baja composición'}</div>
-              <div style="font-size:9px;color:#94A3B8;margin-top:2px">${fechaDisplay}</div>
+            <div style="width:1px;background:#E2E8F0;margin:0 8px;flex-shrink:0"></div>
+            <div style="flex:1;padding:6px 4px">
+              <div style="font-size:15px;font-weight:700;line-height:1"><span style="color:${trPct.color}">${musculoPct!==null?musculoPct.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">%</span></div>
+              <div style="margin-top:4px;font-size:10px;color:${trPct.color}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable':trPct.icon==='↑'?'subiendo':'bajando'}</div>
             </div>
           </div>
+          <div style="font-size:9px;color:#94A3B8;margin-top:6px;text-align:right">${fechaDisplay}</div>
         </div>`;
       }
     } else if(ind.key==='peso'&&val!==null){
