@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:38</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:44</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1359,18 +1359,69 @@ async function loadFromDrive(){
   try{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),30000);
+    const t0=Date.now();
     const res=await fetch(SCRIPT_URL,{signal:controller.signal});
     clearTimeout(timeout);
+    const fetchMs=Date.now()-t0; // tiempo real del fetch al Apps Script
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
     if(!Array.isArray(data.rows)||data.rows.length===0)throw new Error('Sin datos');
     processRows(data.rows,data);
-    syncInBackground();
+    syncInBackground(fetchMs);
   }catch(e){
     console.error(e);
     badge.textContent='Error: '+e.message;badge.className='status-error';
   }
+}
+
+async function syncInBackground(estimatedMs){
+  const wrap=document.getElementById('sync-progress-wrap');
+  const bar=document.getElementById('sync-bar');
+  const pct=document.getElementById('sync-pct');
+  if(wrap)wrap.style.display='block';
+
+  // El sync hace exactamente lo mismo que el fetch inicial (misma ruta Apps Script)
+  // así que usamos ese tiempo medido como estimación, con un 10% de margen
+  const EXPECTED_MS=Math.max(5000, (estimatedMs||15000)*1.1);
+
+  function setBar(v){
+    if(bar)bar.style.width=v+'%';
+    if(pct)pct.textContent=Math.round(v)+'%';
+  }
+  setBar(3);
+
+  try{
+    const startTs=Date.now();
+    const iv=setInterval(()=>{
+      const ratio=Math.min(0.97,(Date.now()-startTs)/EXPECTED_MS);
+      // Curva ease-out: arranca rápido, se ralentiza al final
+      const prog=3+(ratio*ratio*(3-2*ratio))*90; // smoothstep 3→93%
+      setBar(Math.min(93,prog));
+    },200);
+
+    const res=await fetch(SCRIPT_URL+'?action=sync');
+    clearInterval(iv);
+    setBar(97);
+    await new Promise(r=>setTimeout(r,120));
+    setBar(100);
+
+    if(res.ok){
+      const result=await res.json();
+      if(result.processed>0){
+        setTimeout(async()=>{
+          if(wrap)wrap.style.display='none';
+          try{
+            const r2=await fetch(SCRIPT_URL);
+            const d2=await r2.json();
+            if(!d2.error&&d2.rows)processRows(d2.rows,d2);
+          }catch(e2){}
+        },800);
+      }else{
+        setTimeout(()=>{if(wrap)wrap.style.display='none';},1200);
+      }
+    }
+  }catch(e){if(wrap)wrap.style.display='none';}
 }
 
 async function syncInBackground(){
