@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:11</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:15</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1753,6 +1753,9 @@ function renderRGrid(gridId,inds){
       const histPeso=HIST['peso']||[];
       const pesoMap={};histPeso.forEach(function(e){pesoMap[e.fecha]=e.val;});
       const pesoAct=calcStats('peso').last;
+      const anioCard=new Date().getFullYear();
+      const objCard=getObj(ind.key,anioCard);
+      const oCard=OBJ_PUNTOS[ind.key];
 
       // Calcular tendencia 7d para una serie de valores
       function trendOf(vals,goodDir){
@@ -1782,9 +1785,8 @@ function renderRGrid(gridId,inds){
         const trPct=trendOf(pctVals,'lower');
         const trKg=trendOf(kgVals,'lower');
         const grasaKg=pesoAct?(val*pesoAct/100):null;
-        const pctDiff=obj!==null?(val-obj).toFixed(1):null;
-        const objTxt=pctDiff!==null?(parseFloat(pctDiff)<=0?'✓ obj ≤'+obj+'%':('+'+pctDiff+'% sobre obj ≤'+obj+'%')):'';
-        return`<div class="r-card" id="rcard-grasa" onclick="rSelectCard('grasa')">
+        const pctDiff=objCard!==null?(val-objCard).toFixed(1):null;
+        const objTxt=pctDiff!==null?(parseFloat(pctDiff)<=0?'✓ obj ≤'+objCard+'%':('+'+pctDiff+'% sobre obj ≤'+objCard+'%')):'';        return`<div class="r-card" id="rcard-grasa" onclick="rSelectCard('grasa')">
           <p class="r-card-name">Grasa corporal</p>
           <div style="display:flex;align-items:stretch;margin-top:4px">
             <div style="flex:1">
@@ -1808,8 +1810,8 @@ function renderRGrid(gridId,inds){
         const trKg=trendOf(kgVals,'higher');
         const trPct=trendOf(pctVals,'higher');
         const musculoPct=pesoAct?(val/pesoAct*100):null;
-        const kgDiff=obj!==null?(val-obj).toFixed(1):null;
-        const objTxt=kgDiff!==null?(parseFloat(kgDiff)>=0?'✓ obj ≥'+obj+' kg':((kgDiff)+' kg bajo obj ≥'+obj+' kg')):'';
+        const kgDiff=objCard!==null?(val-objCard).toFixed(1):null;
+        const objTxt=kgDiff!==null?(parseFloat(kgDiff)>=0?'✓ obj ≥'+objCard+' kg':((kgDiff)+' kg bajo obj ≥'+objCard+' kg')):'';
         return`<div class="r-card" id="rcard-musculo" onclick="rSelectCard('musculo')">
           <p class="r-card-name">Masa muscular</p>
           <div style="display:flex;align-items:stretch;margin-top:4px">
