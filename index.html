@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:44</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:58</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1123,6 +1123,48 @@ function renderTimeline() {
     </div>`).join('');
 }
 
+function updateMetricasFromHIST(){
+  // Mapeo: param en METRICAS → {key en HIST, decimals, eval estado}
+  const MAP=[
+    {param:'FC reposo (bpm)',     key:'fc',      dec:1, dir:'lower',  thOk:60,  thWarn:70},
+    {param:'VO₂max (ml/kg/min)', key:'vo2',     dec:1, dir:'higher', thOk:52,  thWarn:46},
+    {param:'TA sistólica (mmHg)',key:'ta',      dec:0, dir:'lower',  thOk:125, thWarn:135},
+    {param:'Grasa corporal (%)', key:'grasa',   dec:1, dir:'lower',  thOk:17,  thWarn:20},
+    {param:'Masa muscular (kg)', key:'musculo', dec:1, dir:'higher', thOk:59,  thWarn:56},
+    {param:'Sueño (h/noche)',    key:'sueno',   dec:2, dir:'higher', thOk:7.5, thWarn:7.0},
+  ];
+  const anio=new Date().getFullYear();
+  MAP.forEach(function(m){
+    const stats=calcStats(m.key);
+    const val=m.key==='vo2'?(stats.last||(LAST_VO2&&LAST_VO2.val)||null):stats.last;
+    if(val===null)return;
+    // Actualizar val en METRICAS
+    const entry=METRICAS.find(function(x){return x.param===m.param;});
+    if(!entry)return;
+    entry.val=val.toFixed(m.dec);
+    // Actualizar estado
+    const obj=getObj(m.key,anio);
+    if(obj!==null){
+      const ok=m.dir==='lower'?val<=obj:val>=obj;
+      const close=m.dir==='lower'?val<=obj*1.15:val>=obj*0.85;
+      entry.estado=ok?'ok':close?'warn':'alert';
+    } else {
+      // Sin objetivo, usar thresholds propios
+      entry.estado=m.dir==='lower'
+        ?(val<=m.thOk?'ok':val<=m.thWarn?'warn':'alert')
+        :(val>=m.thOk?'ok':val>=m.thWarn?'warn':'alert');
+    }
+    // Actualizar fuente con fecha real
+    const hist=[...(HIST[m.key]||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+    if(hist.length>0){
+      const f=hist[0].fecha;
+      const iso=f.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      const meses=['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      if(iso)entry.fuente=(m.key==='fc'||m.key==='sueno'||m.key==='vo2'?'Garmin':m.key==='ta'?'Withings BPM':'Withings')+' '+meses[parseInt(iso[2])]+'-'+iso[1];
+    }
+  });
+}
+
 function renderMetrics() {
   const statusLabel = {ok:'✓ Bien', warn:'→ Mejorar', alert:'⚠ Urgente'};
   const statusCol   = {ok:'#15803D', warn:'#B45309', alert:'#DC2626'};
@@ -1523,7 +1565,7 @@ function processRows(rows,data){
   badge.className='status-ok';
   const el_lu=document.getElementById('last-update');
   if(el_lu)el_lu.textContent=new Date().toLocaleString('es-ES');
-  renderResumen();renderMetrics();renderDatosPane();
+  renderResumen();updateMetricasFromHIST();renderMetrics();renderDatosPane();
 }
 
 
