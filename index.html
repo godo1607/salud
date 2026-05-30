@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v25/05/2026 21:06</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:11</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -232,6 +232,9 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 .r-card-val{font-size:22px;font-weight:700;color:#1E293B;line-height:1.1}
 .r-card-unit{font-size:10px;font-weight:400;color:#94A3B8}
 .r-card-secondary{position:absolute;top:10px;right:12px;font-size:10px;font-weight:600;text-align:right;line-height:1.3}
+.r-card-dual{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:2px}
+.r-card-dual-col{padding:0}
+.r-card-dual-divider{width:1px;background:#E2E8F0;margin:0 8px;align-self:stretch}
 .r-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
 .r-trend{font-size:10px;display:flex;align-items:center;gap:2px}
 .r-trend-good{color:#15803D}
@@ -1745,35 +1748,85 @@ function renderRGrid(gridId,inds){
       displayVal=`<span style="color:${color}">${Math.round(val).toLocaleString('es-ES')}</span>`;
       const pct=Math.min(100,Math.round(val/10000*100));
       footerRight=`<span style="font-size:10px;color:${color};font-weight:600">${pct}% de 10k</span>`;
-    } else if(ind.key==='grasa'&&val!==null){
-      const pesoAct=calcStats('peso').last;
-      const grasaKg=pesoAct?(val*pesoAct/100):null;
-      // Color vs objetivo %
-      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
-      // Tendencia kg independiente
+    } else if((ind.key==='grasa'||ind.key==='musculo')&&val!==null){
+      // Card especial de dos columnas — se retorna directamente
       const histPeso=HIST['peso']||[];
-      const histGrasa=HIST['grasa']||[];
-      const sortedG=[...histGrasa].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-      const sortedP=[...histPeso].sort((a,b)=>b.fecha.localeCompare(a.fecha));
       const pesoMap={};histPeso.forEach(function(e){pesoMap[e.fecha]=e.val;});
-      const kgVals=sortedG.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val*p/100):null;}).filter(function(v){return v!==null;});
-      let kgTrIcon='→',kgTrColor='#94A3B8';
-      if(kgVals.length>=7){const rec=kgVals.slice(0,7).reduce(function(s,v){return s+v;},0)/7;const old=kgVals.slice(7,14).reduce(function(s,v){return s+v;},0)/Math.max(kgVals.slice(7,14).length,1);const d=rec-old;if(Math.abs(d)>=0.1){kgTrIcon=d<0?'↓':'↑';kgTrColor=d<0?'#15803D':'#DC2626';}}
-      footerRight=`<span class="r-card-secondary"><span style="color:#64748B">${grasaKg!==null?grasaKg.toFixed(1)+' kg':'—'}</span><br><span style="color:${kgTrColor}">${kgTrIcon} kg</span></span>`;
-    } else if(ind.key==='musculo'&&val!==null){
       const pesoAct=calcStats('peso').last;
-      const musculoPct=pesoAct?(val/pesoAct*100):null;
-      // Color vs objetivo kg
-      displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
-      // Tendencia % independiente
-      const histPeso=HIST['peso']||[];
-      const histMusculo=HIST['musculo']||[];
-      const sortedM=[...histMusculo].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-      const pesoMap={};histPeso.forEach(function(e){pesoMap[e.fecha]=e.val;});
-      const pctVals=sortedM.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val/p*100):null;}).filter(function(v){return v!==null;});
-      let pctTrIcon='→',pctTrColor='#94A3B8';
-      if(pctVals.length>=7){const rec=pctVals.slice(0,7).reduce(function(s,v){return s+v;},0)/7;const old=pctVals.slice(7,14).reduce(function(s,v){return s+v;},0)/Math.max(pctVals.slice(7,14).length,1);const d=rec-old;if(Math.abs(d)>=0.1){pctTrIcon=d>0?'↑':'↓';pctTrColor=d>0?'#15803D':'#DC2626';}}
-      footerRight=`<span class="r-card-secondary"><span style="color:#64748B">${musculoPct!==null?musculoPct.toFixed(1)+'%':'—'}</span><br><span style="color:${pctTrColor}">${pctTrIcon} %</span></span>`;
+
+      // Calcular tendencia 7d para una serie de valores
+      function trendOf(vals,goodDir){
+        // vals ordenados desc por fecha, últimos 14
+        if(vals.length<2)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
+        const rec=vals.slice(0,Math.min(7,vals.length));
+        const old=vals.slice(Math.min(7,vals.length),Math.min(14,vals.length));
+        if(old.length===0)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
+        const avgRec=rec.reduce(function(s,v){return s+v;},0)/rec.length;
+        const avgOld=old.reduce(function(s,v){return s+v;},0)/old.length;
+        const d=avgRec-avgOld;
+        const threshold=avgOld*0.005; // 0.5% de cambio mínimo
+        if(Math.abs(d)<threshold)return{icon:'→',color:'#94A3B8',cls:'r-trend-flat'};
+        const going_good=(goodDir==='lower'&&d<0)||(goodDir==='higher'&&d>0);
+        return{
+          icon:d<0?'↓':'↑',
+          color:going_good?'#15803D':'#DC2626',
+          cls:going_good?'r-trend-good':'r-trend-bad'
+        };
+      }
+
+      if(ind.key==='grasa'){
+        // Columna izq: % vs objetivo / Columna der: kg con tendencia kg
+        const hist=[...( HIST['grasa']||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+        const pctVals=hist.slice(0,14).map(function(e){return e.val;});
+        const kgVals=hist.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val*p/100):null;}).filter(function(v){return v!==null;});
+        const trPct=trendOf(pctVals,'lower');
+        const trKg=trendOf(kgVals,'lower');
+        const grasaKg=pesoAct?(val*pesoAct/100):null;
+        const pctDiff=obj!==null?(val-obj).toFixed(1):null;
+        const objTxt=pctDiff!==null?(parseFloat(pctDiff)<=0?'✓ obj ≤'+obj+'%':('+'+pctDiff+'% sobre obj ≤'+obj+'%')):'';
+        return`<div class="r-card" id="rcard-grasa" onclick="rSelectCard('grasa')">
+          <p class="r-card-name">Grasa corporal</p>
+          <div style="display:flex;align-items:stretch;margin-top:4px">
+            <div style="flex:1">
+              <div style="font-size:22px;font-weight:700;line-height:1"><span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">%</span></div>
+              <div style="margin-top:4px;font-size:10px" class="${trPct.cls}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable %':trPct.icon==='↓'?'bajando %':'subiendo %'}</div>
+              ${objTxt?`<div style="font-size:9px;margin-top:2px;color:${parseFloat(pctDiff)<=0?'#15803D':'#D97706'}">${objTxt}</div>`:''}
+            </div>
+            <div style="width:1px;background:#E2E8F0;margin:0 10px"></div>
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:700;line-height:1"><span style="color:${trKg.color}">${grasaKg!==null?grasaKg.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">kg</span></div>
+              <div style="margin-top:4px;font-size:10px" class="${trKg.cls}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable kg':trKg.icon==='↓'?'bajando kg':'subiendo kg'}</div>
+              <div style="font-size:9px;color:#94A3B8;margin-top:2px">${fechaDisplay}</div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        // musculo: Columna izq: kg vs objetivo / Columna der: % con tendencia %
+        const hist=[...(HIST['musculo']||[])].sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+        const kgVals=hist.slice(0,14).map(function(e){return e.val;});
+        const pctVals=hist.slice(0,14).map(function(e){const p=pesoMap[e.fecha];return p?(e.val/p*100):null;}).filter(function(v){return v!==null;});
+        const trKg=trendOf(kgVals,'higher');
+        const trPct=trendOf(pctVals,'higher');
+        const musculoPct=pesoAct?(val/pesoAct*100):null;
+        const kgDiff=obj!==null?(val-obj).toFixed(1):null;
+        const objTxt=kgDiff!==null?(parseFloat(kgDiff)>=0?'✓ obj ≥'+obj+' kg':((kgDiff)+' kg bajo obj ≥'+obj+' kg')):'';
+        return`<div class="r-card" id="rcard-musculo" onclick="rSelectCard('musculo')">
+          <p class="r-card-name">Masa muscular</p>
+          <div style="display:flex;align-items:stretch;margin-top:4px">
+            <div style="flex:1">
+              <div style="font-size:22px;font-weight:700;line-height:1"><span style="color:${color}">${val.toFixed(1)}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">kg</span></div>
+              <div style="margin-top:4px;font-size:10px" class="${trKg.cls}">${trKg.icon} ${trKg.cls==='r-trend-flat'?'estable kg':trKg.icon==='↑'?'ganando kg':'perdiendo kg'}</div>
+              ${objTxt?`<div style="font-size:9px;margin-top:2px;color:${parseFloat(kgDiff)>=0?'#15803D':'#D97706'}">${objTxt}</div>`:''}
+            </div>
+            <div style="width:1px;background:#E2E8F0;margin:0 10px"></div>
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:700;line-height:1"><span style="color:${trPct.color}">${musculoPct!==null?musculoPct.toFixed(1):'—'}</span><span style="font-size:10px;color:#94A3B8;margin-left:2px">%</span></div>
+              <div style="margin-top:4px;font-size:10px" class="${trPct.cls}">${trPct.icon} ${trPct.cls==='r-trend-flat'?'estable %':trPct.icon==='↑'?'mejora composición':'baja composición'}</div>
+              <div style="font-size:9px;color:#94A3B8;margin-top:2px">${fechaDisplay}</div>
+            </div>
+          </div>
+        </div>`;
+      }
     } else if(ind.key==='peso'&&val!==null){
       const imc=val/(ALTURA_M*ALTURA_M);
       displayVal=`<span style="color:${color}">${val.toFixed(1)}</span>`;
@@ -1794,13 +1847,13 @@ function renderRGrid(gridId,inds){
       displayVal=`<span style="color:${val!==null?color:'#94A3B8'}">${dv}</span>`;
     }
 
-    return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')" style="position:relative">
+    return`<div class="r-card" id="rcard-${ind.key}" onclick="rSelectCard('${ind.key}')">
       <p class="r-card-name">${ind.label}</p>
       ${footerRight}
       <p class="r-card-val">${displayVal} <span class="r-card-unit">${ind.unit}</span></p>
       <div class="r-card-footer">
         <span class="r-trend ${tr.cls}">${tr.icon}</span>
-        <span style="font-size:10px;color:#94A3B8">${(ind.key==='grasa'||ind.key==='musculo')?'':fechaDisplay}</span>
+        <span style="font-size:10px;color:#94A3B8">${fechaDisplay}</span>
       </div>
     </div>`;
   }).join('');
