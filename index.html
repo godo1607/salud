@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:28</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:38</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -1378,20 +1378,49 @@ async function syncInBackground(){
   const bar=document.getElementById('sync-bar');
   const pct=document.getElementById('sync-pct');
   if(wrap)wrap.style.display='block';
+
+  // Usamos la duración del fetch inicial como estimación del siguiente
+  // Guardada en localStorage para mejorar con cada uso
+  const storedMs=parseInt(localStorage.getItem('salud_fetch_ms')||'15000');
+  const EXPECTED_MS=Math.max(5000, Math.min(60000, storedMs*1.2)); // +20% margen
+
+  // Fase 1: 0→30% mientras preparamos (instantáneo, base visual)
+  function setBar(v){
+    if(bar)bar.style.width=v+'%';
+    if(pct)pct.textContent=Math.round(v)+'%';
+  }
+  setBar(5);
+
   try{
-    // Barra proporcional al tiempo: avanza linealmente hasta 95% en ~4s
     const startTs=Date.now();
-    const EXPECTED_MS=4000;
+
+    // Animación proporcional al tiempo estimado real, en tres tramos:
+    // 0-30%: primeros 15% del tiempo estimado (arranque rápido)
+    // 30-85%: 15%-85% del tiempo (fase larga, lineal)
+    // 85-95%: últimos 15% del tiempo (ralentización final)
     const iv=setInterval(()=>{
       const elapsed=Date.now()-startTs;
-      const prog=Math.min(95,Math.round(elapsed/EXPECTED_MS*95));
-      if(bar)bar.style.width=prog+'%';
-      if(pct)pct.textContent=prog+'%';
-    },100);
+      const ratio=Math.min(0.99, elapsed/EXPECTED_MS);
+      let prog;
+      if(ratio<0.15)       prog=5  + (ratio/0.15)*25;        // 5→30% rápido
+      else if(ratio<0.85)  prog=30 + ((ratio-0.15)/0.70)*55; // 30→85% lineal
+      else                 prog=85 + ((ratio-0.85)/0.14)*10; // 85→95% lento
+      setBar(Math.min(95, prog));
+    },150);
+
     const res=await fetch(SCRIPT_URL+'?action=sync');
     clearInterval(iv);
-    if(bar)bar.style.width='100%';
+
+    // Guardar tiempo real para la próxima vez
+    const realMs=Date.now()-startTs;
+    localStorage.setItem('salud_fetch_ms', realMs);
+
+    // Fase final: 95→100% rápido (procesamiento local)
+    setBar(97);
+    await new Promise(r=>setTimeout(r,150));
+    setBar(100);
     if(pct)pct.textContent='100%';
+
     if(res.ok){
       const result=await res.json();
       if(result.processed>0){
@@ -1404,7 +1433,7 @@ async function syncInBackground(){
           }catch(e2){}
         },800);
       }else{
-        setTimeout(()=>{if(wrap)wrap.style.display='none';},1500);
+        setTimeout(()=>{if(wrap)wrap.style.display='none';},1200);
       }
     }
   }catch(e){if(wrap)wrap.style.display='none';}
