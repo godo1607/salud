@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Conectando...</title></head>
+<body>
+<script>
+  // Captura los parámetros OAuth de Strava y redirige al dashboard
+  const params = window.location.search;
+  if (params.includes('code=')) {
+    window.location.replace('https://godo1607.github.io/salud/' + params);
+  } else {
+    window.location.replace('https://godo1607.github.io/salud/');
+  }
+</script>
+</body>
+</html>
