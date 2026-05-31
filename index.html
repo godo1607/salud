@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v30/05/2026 18:58</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v31/05/2026 22:30</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -209,6 +209,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
   <button class="ntab" onclick="show('nutricion')">Nutrición</button>
   <button class="ntab" onclick="show('decadas')">Plan décadas</button>
   <button class="ntab" onclick="show('datos')">Datos cargados</button>
+  <button class="ntab" onclick="show('strava')">Entrenos</button>
 </nav>
 
 <main>
@@ -2373,6 +2374,280 @@ function show(id) {
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+<!-- ══ ENTRENOS (STRAVA) ══════════════════════════════════════════════ -->
+<div id="pane-strava" class="pane">
+<style>
+.sv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:700px){.sv-grid{grid-template-columns:repeat(2,1fr)}}
+.sv-stat{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px}
+.sv-stat-lbl{font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.sv-stat-val{font-size:22px;font-weight:700;color:#1E293B;line-height:1}
+.sv-stat-sub{font-size:10px;color:#94A3B8;margin-top:3px}
+.sv-act{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;
+  display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;margin-bottom:8px}
+.sv-act-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0}
+.sv-icon-run{background:#FEE2E2}
+.sv-icon-ride{background:#DBEAFE}
+.sv-icon-gym{background:#D1FAE5}
+.sv-icon-other{background:#F1F5F9}
+.sv-act-name{font-size:12px;font-weight:600;color:#1E293B;margin-bottom:2px}
+.sv-act-meta{font-size:10px;color:#94A3B8}
+.sv-act-right{text-align:right}
+.sv-act-dist{font-size:13px;font-weight:700;color:#1E293B}
+.sv-act-time{font-size:10px;color:#94A3B8}
+.sv-week-btn{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid #E2E8F0;background:#fff;color:#64748B;margin-right:6px;margin-bottom:8px;transition:all .15s}
+.sv-week-btn.sv-active{background:#FC4C02;border-color:#FC4C02;color:#fff}
+.sv-connect-box{background:#fff;border:1px solid #E2E8F0;border-radius:12px;
+  padding:32px;text-align:center;margin-bottom:16px}
+.sv-connect-btn{background:#FC4C02;color:#fff;border:none;padding:11px 24px;
+  border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.sv-connect-btn:hover{opacity:.85}
+.sv-analyze-btn{width:100%;background:#EFF6FF;border:1px solid #2563EB;color:#2563EB;
+  padding:12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;
+  margin-bottom:12px;transition:background .15s}
+.sv-analyze-btn:hover{background:#DBEAFE}
+.sv-analyze-btn:disabled{opacity:.5;cursor:not-allowed}
+.sv-ai-box{background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #2563EB;
+  border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.75;color:#334155;white-space:pre-wrap}
+.sv-err{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;
+  padding:10px 14px;font-size:11px;color:#991B1B;margin-bottom:12px}
+.sv-loading{text-align:center;padding:32px;color:#94A3B8;font-size:12px}
+</style>
+
+<div class="sec" style="margin-top:16px">Actividades semanales · Strava</div>
+
+<!-- Selector de semana -->
+<div style="margin-bottom:12px">
+  <button class="sv-week-btn sv-active" onclick="svSelectWeek(0,this)">Esta semana</button>
+  <button class="sv-week-btn" onclick="svSelectWeek(1,this)">Semana pasada</button>
+  <button class="sv-week-btn" onclick="svSelectWeek(2,this)">Hace 2 semanas</button>
+</div>
+
+<div class="sv-err" id="sv-err" style="display:none"></div>
+
+<!-- Conexión -->
+<div class="sv-connect-box" id="sv-connect-box">
+  <div style="font-size:28px;margin-bottom:8px">🏃</div>
+  <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:6px">Conectar con Strava</div>
+  <div style="font-size:12px;color:#64748B;margin-bottom:20px">Autoriza el acceso para ver tus actividades semanales</div>
+  <button class="sv-connect-btn" onclick="svConnect()">Conectar con Strava</button>
+</div>
+
+<!-- Loading -->
+<div class="sv-loading" id="sv-loading" style="display:none">
+  <div class="spinner"></div><br>Cargando actividades...
+</div>
+
+<!-- Dashboard -->
+<div id="sv-dashboard" style="display:none">
+  <!-- KPIs resumen -->
+  <div class="sv-grid" id="sv-kpis"></div>
+  <!-- Lista actividades -->
+  <div class="sec">Actividades</div>
+  <div id="sv-acts"></div>
+  <!-- Botón análisis IA -->
+  <button class="sv-analyze-btn" id="sv-analyze-btn" onclick="svAnalyze()">⚡ Analizar semana con IA</button>
+  <div id="sv-ai-result" style="display:none" class="sv-ai-box"></div>
+</div>
+
+<script>
+(function(){
+  const SV_CLIENT_ID='253575';
+  const SV_CLIENT_SECRET='3f6222fc33ee038c6804638cd76b167ea8f96886';
+  const SV_REDIRECT_URI=window.location.href.split('?')[0].split('#')[0];
+  let svToken=null, svWeekOffset=0, svActivities=[];
+
+  window.svSelectWeek=function(offset,btn){
+    svWeekOffset=offset;
+    document.querySelectorAll('.sv-week-btn').forEach(b=>b.classList.remove('sv-active'));
+    btn.classList.add('sv-active');
+    if(svToken) svLoad();
+  };
+
+  window.svConnect=function(){
+    const url='https://www.strava.com/oauth/authorize?client_id='+SV_CLIENT_ID
+      +'&redirect_uri='+encodeURIComponent(SV_REDIRECT_URI)
+      +'&response_type=code&scope=read,activity:read_all';
+    window.location.href=url;
+  };
+
+  async function svExchange(code){
+    const r=await fetch('https://www.strava.com/oauth/token',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({client_id:SV_CLIENT_ID,client_secret:SV_CLIENT_SECRET,
+        code,grant_type:'authorization_code'})
+    });
+    const d=await r.json();
+    if(d.access_token){
+      svToken=d.access_token;
+      localStorage.setItem('sv_token',d.access_token);
+      localStorage.setItem('sv_exp',d.expires_at);
+      localStorage.setItem('sv_refresh',d.refresh_token);
+      window.history.replaceState({},'',window.location.pathname);
+      return true;
+    }
+    return false;
+  }
+
+  async function svRefresh(){
+    const ref=localStorage.getItem('sv_refresh');if(!ref)return false;
+    const r=await fetch('https://www.strava.com/oauth/token',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({client_id:SV_CLIENT_ID,client_secret:SV_CLIENT_SECRET,
+        refresh_token:ref,grant_type:'refresh_token'})
+    });
+    const d=await r.json();
+    if(d.access_token){
+      svToken=d.access_token;
+      localStorage.setItem('sv_token',d.access_token);
+      localStorage.setItem('sv_exp',d.expires_at);
+      localStorage.setItem('sv_refresh',d.refresh_token);
+      return true;
+    }
+    return false;
+  }
+
+  function svWeekRange(offset){
+    const now=new Date();
+    const day=now.getDay()||7;
+    const mon=new Date(now);
+    mon.setDate(now.getDate()-day+1-offset*7);mon.setHours(0,0,0,0);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+    return{after:Math.floor(mon/1000),before:Math.floor(sun/1000)};
+  }
+
+  function svFmt(m){return m>0?(m/1000).toFixed(1)+' km':'—';}
+  function svFmtT(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h>0?h+'h '+m+'m':m+'m';}
+  function svPace(mps){if(!mps)return'—';const spk=1000/mps,mi=Math.floor(spk/60),si=Math.round(spk%60);return mi+':'+(si+'').padStart(2,'0');}
+  function svIcon(type){
+    if(type==='Run'||type==='TrailRun')return{e:'🏃',c:'sv-icon-run'};
+    if(type.includes('Ride'))return{e:'🚴',c:'sv-icon-ride'};
+    if(type==='WeightTraining'||type==='Workout'||type==='Rowing')return{e:'🏋️',c:'sv-icon-gym'};
+    return{e:'⚡',c:'sv-icon-other'};
+  }
+
+  async function svLoad(){
+    document.getElementById('sv-connect-box').style.display='none';
+    document.getElementById('sv-loading').style.display='block';
+    document.getElementById('sv-dashboard').style.display='none';
+    document.getElementById('sv-err').style.display='none';
+    const{after,before}=svWeekRange(svWeekOffset);
+    try{
+      const r=await fetch('https://www.strava.com/api/v3/athlete/activities?after='+after+'&before='+before+'&per_page=50',
+        {headers:{Authorization:'Bearer '+svToken}});
+      if(r.status===401){const ok=await svRefresh();if(ok)return svLoad();svReset();return;}
+      svActivities=await r.json();
+      svRender();
+    }catch(e){svShowErr('Error al cargar: '+e.message);}
+    document.getElementById('sv-loading').style.display='none';
+  }
+
+  function svRender(){
+    const runs=svActivities.filter(a=>a.type==='Run'||a.type==='TrailRun');
+    const totalDist=svActivities.reduce((s,a)=>s+(a.distance||0),0);
+    const totalTime=svActivities.reduce((s,a)=>s+(a.moving_time||0),0);
+    const totalElev=svActivities.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
+    const avgHR=runs.filter(a=>a.average_heartrate).length>0
+      ?Math.round(runs.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/runs.filter(a=>a.average_heartrate).length):null;
+    const avgPace=runs.filter(a=>a.average_speed).length>0
+      ?runs.reduce((s,a)=>s+(a.average_speed||0),0)/runs.filter(a=>a.average_speed).length:null;
+
+    document.getElementById('sv-kpis').innerHTML=`
+      <div class="sv-stat"><div class="sv-stat-lbl">Distancia</div><div class="sv-stat-val" style="color:#FC4C02">${svFmt(totalDist)}</div><div class="sv-stat-sub">${svActivities.length} actividades</div></div>
+      <div class="sv-stat"><div class="sv-stat-lbl">Tiempo</div><div class="sv-stat-val" style="color:#2563EB">${svFmtT(totalTime)}</div><div class="sv-stat-sub">+${Math.round(totalElev)} m desnivel</div></div>
+      <div class="sv-stat"><div class="sv-stat-lbl">FC media runs</div><div class="sv-stat-val" style="color:#15803D">${avgHR?avgHR+' ppm':'—'}</div><div class="sv-stat-sub">promedio carreras</div></div>
+      <div class="sv-stat"><div class="sv-stat-lbl">Ritmo medio</div><div class="sv-stat-val">${avgPace?svPace(avgPace):'—'}</div><div class="sv-stat-sub">/km carreras</div></div>`;
+
+    const sorted=[...svActivities].sort((a,b)=>new Date(b.start_date)-new Date(a.start_date));
+    document.getElementById('sv-acts').innerHTML=sorted.length===0
+      ?'<div style="text-align:center;padding:24px;color:#94A3B8;font-size:12px">No hay actividades esta semana</div>'
+      :sorted.map(a=>{
+        const{e,c}=svIcon(a.type);
+        const isRun=a.type==='Run'||a.type==='TrailRun';
+        const dt=new Date(a.start_date_local);
+        const ds=dt.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+        const meta=[ds,a.type,a.average_heartrate?Math.round(a.average_heartrate)+' ppm':null,isRun&&a.average_speed?svPace(a.average_speed)+'/km':null].filter(Boolean).join(' · ');
+        return`<div class="sv-act">
+          <div class="sv-act-icon ${c}">${e}</div>
+          <div><div class="sv-act-name">${a.name}</div><div class="sv-act-meta">${meta}</div></div>
+          <div class="sv-act-right"><div class="sv-act-dist">${a.distance>0?svFmt(a.distance):svFmtT(a.moving_time)}</div><div class="sv-act-time">${svFmtT(a.moving_time)}</div></div>
+        </div>`;
+      }).join('');
+
+    document.getElementById('sv-ai-result').style.display='none';
+    document.getElementById('sv-dashboard').style.display='block';
+  }
+
+  window.svAnalyze=async function(){
+    const btn=document.getElementById('sv-analyze-btn');
+    btn.disabled=true;btn.textContent='Analizando...';
+    const box=document.getElementById('sv-ai-result');
+    box.style.display='block';box.textContent='Generando análisis...';
+    const summary=svActivities.map(a=>{
+      const isRun=a.type==='Run'||a.type==='TrailRun';
+      return`- ${a.type}: ${a.name} | ${(a.distance/1000).toFixed(1)} km | ${Math.round(a.moving_time/60)} min`
+        +(a.average_heartrate?' | FC '+Math.round(a.average_heartrate)+' ppm':'')
+        +(a.max_heartrate?' | FCmax '+Math.round(a.max_heartrate)+' ppm':'')
+        +(isRun&&a.average_speed?' | '+svPace(a.average_speed)+'/km':'')
+        +(a.total_elevation_gain?' | +'+Math.round(a.total_elevation_gain)+'m':'');
+    }).join('\n');
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',max_tokens:1000,
+          system:'Eres un entrenador de running experto. El atleta es Fernando, 50 años, FCmax 185 ppm. Está haciendo protocolo 4x4 noruego para mejorar VO2max. Analiza su semana en español de forma directa: carga total, distribución intensidades, puntos fuertes y recomendación siguiente semana. Máximo 200 palabras.',
+          messages:[{role:'user',content:'Actividades de la semana:\n'+summary+'\n\nAnaliza.'}]
+        })
+      });
+      const d=await r.json();
+      box.textContent=d.content?.[0]?.text||'Sin respuesta.';
+    }catch(e){box.textContent='Error: '+e.message;}
+    btn.disabled=false;btn.textContent='⚡ Analizar semana con IA';
+  };
+
+  function svShowErr(msg){
+    const el=document.getElementById('sv-err');el.textContent=msg;el.style.display='block';
+    document.getElementById('sv-loading').style.display='none';
+  }
+
+  function svReset(){
+    localStorage.removeItem('sv_token');localStorage.removeItem('sv_exp');localStorage.removeItem('sv_refresh');
+    svToken=null;
+    document.getElementById('sv-connect-box').style.display='block';
+    document.getElementById('sv-dashboard').style.display='none';
+  }
+
+  // Init: comprobar OAuth callback o token guardado
+  async function svInit(){
+    const params=new URLSearchParams(window.location.search);
+    const code=params.get('code');
+    if(code&&params.get('scope')){
+      // Solo procesar si estamos en la pestaña strava (o navegar a ella)
+      document.getElementById('sv-loading').style.display='block';
+      document.getElementById('sv-connect-box').style.display='none';
+      const ok=await svExchange(code);
+      if(ok){show('strava');await svLoad();}
+      else{svShowErr('Error de autenticación.');}
+      return;
+    }
+    const tok=localStorage.getItem('sv_token');
+    const exp=localStorage.getItem('sv_exp');
+    if(tok&&exp&&Date.now()/1000<parseInt(exp)-300){
+      svToken=tok;svLoad();
+    } else if(localStorage.getItem('sv_refresh')){
+      const ok=await svRefresh();
+      if(ok) svLoad();
+    }
+  }
+
+  svInit();
+})();
+</script>
+</div>
 
 <!-- Panel detalle KPI -->
 <div id="detail-overlay" onclick="closeDetail(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center">
