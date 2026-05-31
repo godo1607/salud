@@ -184,7 +184,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
 <header>
   <div>
     <h1>Plan Centenario Personal</h1>
-    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v01/06/2026 00:30</span></p>
+    <p>50 años · Madrid · Horizonte 2076 · Objetivo: 100 años · <span style="color:#F59E0B;font-size:10px" id="build-ts">v01/06/2026 01:15</span></p>
   </div>
   <div class="header-right">
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -2583,28 +2583,21 @@ function show(id) {
 
   window.svAnalyze=async function(){
     const btn=document.getElementById('sv-analyze-btn');
-    btn.disabled=true;btn.textContent='Analizando...';
+    btn.disabled=true;btn.textContent='Obteniendo datos detallados...';
     const box=document.getElementById('sv-ai-result');
-    box.style.display='block';box.textContent='Generando análisis...';
-    const summary=svActivities.map(a=>{
-      const isRun=a.type==='Run'||a.type==='TrailRun';
-      return`- ${a.type}: ${a.name} | ${(a.distance/1000).toFixed(1)} km | ${Math.round(a.moving_time/60)} min`
-        +(a.average_heartrate?' | FC '+Math.round(a.average_heartrate)+' ppm':'')
-        +(a.max_heartrate?' | FCmax '+Math.round(a.max_heartrate)+' ppm':'')
-        +(isRun&&a.average_speed?' | '+svPace(a.average_speed)+'/km':'')
-        +(a.total_elevation_gain?' | +'+Math.round(a.total_elevation_gain)+'m':'');
-    }).join('\n');
+    box.style.display='block';box.textContent='Cargando detalle de actividades...';
     try{
-      const r=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',headers:{'Content-Type':'application/json'},
+      const r=await fetch('https://script.google.com/macros/s/AKfycbz7Y2zRmyUs0aQc0RV8kzW0538qF-wpKgKwHm68e3BOWLfjlW3CcxnddAHKF4Oz3xPP/exec',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',max_tokens:1000,
-          system:'Eres un entrenador de running experto. El atleta es Fernando, 50 años, FCmax 185 ppm. Está haciendo protocolo 4x4 noruego para mejorar VO2max. Analiza su semana en español de forma directa: carga total, distribución intensidades, puntos fuertes y recomendación siguiente semana. Máximo 200 palabras.',
-          messages:[{role:'user',content:'Actividades de la semana:\n'+summary+'\n\nAnaliza.'}]
+          activities:svActivities.map(a=>({id:a.id,type:a.type,name:a.name})),
+          stravaToken:svToken
         })
       });
       const d=await r.json();
-      box.textContent=d.content?.[0]?.text||'Sin respuesta.';
+      if(d.error){box.textContent='Error: '+d.error;}
+      else{box.textContent=d.analysis||'Sin respuesta.';}
     }catch(e){box.textContent='Error: '+e.message;}
     btn.disabled=false;btn.textContent='⚡ Analizar semana con IA';
   };
